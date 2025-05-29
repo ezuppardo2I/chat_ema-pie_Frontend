@@ -3,15 +3,10 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 
 type GlobalContextType = {
   signInUser: {
-    userId: string;
     username: string;
     email: string;
   } | null;
-  setSignInUser: (user: {
-    userId: string;
-    username: string;
-    email: string;
-  }) => void;
+  setSignInUser: (user: { username: string; email: string }) => void;
   putUser: (
     user: CognitoUser,
     email: string,
@@ -27,7 +22,6 @@ const GlobalContext = createContext<GlobalContextType>({
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
   const [signInUser, setSignInUser] = useState({
-    userId: "",
     username: "",
     email: "",
   });
