@@ -2,6 +2,7 @@ import {
   CognitoUserPool,
   CognitoUserAttribute,
   CognitoUser,
+  type ISignUpResult,
 } from "amazon-cognito-identity-js";
 
 import { poolData } from "../config";
@@ -40,14 +41,20 @@ export default function Home() {
       Value: email,
     });
 
-    userPool.signUp(email, password, [attributeEmail], [], (err, result) => {
-      if ((err as any).code === "UsernameExistsException") {
-        alert(err?.message || JSON.stringify(err));
-        return;
-      } else {
-        putUser(result!.user, email, username);
+    userPool.signUp(
+      email,
+      password,
+      [attributeEmail],
+      [],
+      async (err: Error | undefined, result: ISignUpResult | undefined) => {
+        if ((err as any).code === "UsernameExistsException") {
+          alert(err?.message || JSON.stringify(err));
+          return;
+        }
+        console.log(result);
+        await putUser(result!.user, email, username);
       }
-    });
+    );
   }
 
   function handleSignIn() {
@@ -59,9 +66,27 @@ export default function Home() {
       <div className="wrapperLoginSignin">
         <form onSubmit={handleSubmit}>
           <div className="containerLoginSignin">
-            <input type="text" name="username" id="username" required />
-            <input type="email" name="email" id="email" required />
-            <input type="password" name="password" id="password" required />
+            <input
+              type="text"
+              name="username"
+              id="username"
+              placeholder="username"
+              required
+            />
+            <input
+              type="email"
+              name="email"
+              id="email"
+              placeholder="email"
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              id="password"
+              placeholder="password"
+              required
+            />
             <button type="submit">Registrati</button>
           </div>
         </form>
