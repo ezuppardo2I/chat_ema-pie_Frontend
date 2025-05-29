@@ -11,6 +11,8 @@ import { useState } from "react";
 export default function Home() {
   const [isLogged, setIsLogged] = useState(false);
 
+  console.log(poolData);
+
   async function putUser(user: CognitoUser, email: string, username: string) {
     console.log(user);
 
@@ -48,11 +50,19 @@ export default function Home() {
       attributeList,
       [],
       function (err: Error | undefined, result: ISignUpResult | undefined) {
-        if ((err as any).code === "UsernameExistsException") {
-          alert(err?.message || JSON.stringify(err));
+        if (err) {
+          console.log("Errore Cognito:", err);
+          if ((err as any).code === "UsernameExistsException") {
+            alert("Utente già esistente");
+          } else {
+            alert(err.message || JSON.stringify(err));
+          }
           return;
+        }
+        if (result && result.user) {
+          putUser(result.user, email, username);
         } else {
-          putUser(result!.user, email, username);
+          console.error("Nessun utente restituito");
         }
       }
     );
@@ -66,18 +76,32 @@ export default function Home() {
     <>
       <div className="wrapperLoginSignin">
         <form onSubmit={handleSubmit}>
-          <input type="text" name="username" id="username" required />
-          <input type="email" name="email" id="email" required />
-          <input type="password" name="password" id="password" required />
-          <button type="submit">Registrati</button>
           <div className="containerLoginSignin">
-            <input type="text" name="username" id="username" required />
-            <input type="email" name="email" id="email" required />
-            <input type="password" name="password" id="password" required />
+            <input
+              type="text"
+              name="username"
+              id="username"
+              placeholder="username"
+              required
+            />
+            <input
+              type="email"
+              name="email"
+              id="email"
+              placeholder="email"
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              id="password"
+              placeholder="password"
+              required
+            />
             <button type="submit">Registrati</button>
           </div>
         </form>
-        <a onClick={handleSignIn}>Registrati</a>
+        <a onClick={handleSignIn}>login</a>
       </div>
     </>
   );

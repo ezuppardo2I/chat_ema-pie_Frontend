@@ -7,10 +7,13 @@
   align-items: center;
 }
 
-.containerLogin {
+.wrapperLoginSignin {
   background-color: white;
   height: 300px;
   width: 800px;
+}
+
+.containerLoginSignin {
   display: flex;
   flex-direction: column;
 }
