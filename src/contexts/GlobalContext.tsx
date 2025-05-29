@@ -7,11 +7,7 @@ type GlobalContextType = {
     email: string;
   } | null;
   setSignInUser: (user: { username: string; email: string }) => void;
-  putUser: (
-    user: CognitoUser,
-    email: string,
-    username: string
-  ) => Promise<void>;
+  putUser: (user: string, email: string, username: string) => Promise<void>;
 };
 
 const GlobalContext = createContext<GlobalContextType>({
@@ -26,16 +22,16 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     email: "",
   });
 
-  async function putUser(user: CognitoUser, email: string, username: string) {
+  async function putUser(user: string, email: string, username: string) {
     await fetch(
       "https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/user",
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userID: user.getUsername(),
-          username,
-          email,
+          userID: user,
+          username: username,
+          email: email,
         }),
       }
     );
