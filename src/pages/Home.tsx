@@ -11,23 +11,6 @@ import { useState } from "react";
 export default function Home() {
   const [isLogged, setIsLogged] = useState(false);
 
-  async function putUser(user: CognitoUser, email: string, username: string) {
-    console.log(user);
-
-    const res = await fetch(
-      "https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/user",
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userID: user.getUsername(),
-          username: username,
-          email: email,
-        }),
-      }
-    );
-  }
-
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -40,21 +23,6 @@ export default function Home() {
       Name: "email",
       Value: email,
     });
-
-    // userPool.signUp(
-    //   email,
-    //   password,
-    //   [attributeEmail],
-    //   [],
-    //   async (err: Error | undefined, result: ISignUpResult | undefined) => {
-    //     console.log(result);
-    //     if ((err as any).code === "UsernameExistsException") {
-    //       alert(err?.message || JSON.stringify(err));
-    //       return;
-    //     }
-    //     await putUser(result!.user, email, username);
-    //   }
-    // );
 
     userPool.signUp(
       email,
@@ -71,8 +39,6 @@ export default function Home() {
         }
         var cognitoUser = result?.user;
         console.log("user name is " + cognitoUser?.getUsername());
-
-        await putUser(result!.user, email, username);
       }
     );
   }
