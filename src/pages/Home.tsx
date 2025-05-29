@@ -1,7 +1,6 @@
 import {
   CognitoUserPool,
   CognitoUserAttribute,
-  type ISignUpResult,
   CognitoUser,
 } from "amazon-cognito-identity-js";
 
@@ -37,10 +36,20 @@ export default function Home() {
     const username = formData.get("username")!.toString();
     const password = formData.get("password")!.toString();
     const userPool = new CognitoUserPool(poolData);
-    const attributeList = [];
-    const dataEmail = {
+
+    const attributeEmail = new CognitoUserAttribute({
       Name: "email",
       Value: email,
+    });
+
+    userPool.signUp(email, password, [attributeEmail], [], (err, result) => {
+      if ((err as any).code === "UsernameExistsException") {
+        alert(err?.message || JSON.stringify(err));
+        return;
+      } else {
+        putUser(result!.user, email, username);
+      }
+    });
     };
     const attributeEmail = new CognitoUserAttribute(dataEmail);
     attributeList.push(attributeEmail);
