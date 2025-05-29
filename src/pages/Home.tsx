@@ -41,17 +41,37 @@ export default function Home() {
       Value: email,
     });
 
+    // userPool.signUp(
+    //   email,
+    //   password,
+    //   [attributeEmail],
+    //   [],
+    //   async (err: Error | undefined, result: ISignUpResult | undefined) => {
+    //     console.log(result);
+    //     if ((err as any).code === "UsernameExistsException") {
+    //       alert(err?.message || JSON.stringify(err));
+    //       return;
+    //     }
+    //     await putUser(result!.user, email, username);
+    //   }
+    // );
+
     userPool.signUp(
       email,
       password,
       [attributeEmail],
       [],
-      async (err: Error | undefined, result: ISignUpResult | undefined) => {
-        if ((err as any).code === "UsernameExistsException") {
-          alert(err?.message || JSON.stringify(err));
+      async function (
+        err: Error | undefined,
+        result: ISignUpResult | undefined
+      ) {
+        if (err) {
+          alert(err.message || JSON.stringify(err));
           return;
         }
-        console.log(result);
+        var cognitoUser = result?.user;
+        console.log("user name is " + cognitoUser?.getUsername());
+
         await putUser(result!.user, email, username);
       }
     );
