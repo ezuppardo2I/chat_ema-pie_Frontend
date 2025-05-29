@@ -6,11 +6,13 @@ import {
 } from "amazon-cognito-identity-js";
 import { poolData } from "../config";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const userPool = new CognitoUserPool(poolData);
   const [confirmCodeSignIn, setConfirmCodeSignIn] = useState(false);
   const [email, setEmail] = useState("");
+  const navigate = useNavigate();
 
   function handleVerification(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -27,6 +29,7 @@ export default function Home() {
         return;
       }
       alert("Utente confermato con successo!");
+      navigate("/login");
     });
   }
 
@@ -70,9 +73,11 @@ export default function Home() {
   return (
     <>
       <div className="wrapperLoginSignin">
+        <h3>Registrazione</h3>
         <form onSubmit={handleSubmit}>
           <div className="containerLoginSignin">
             <input
+              className="form-control"
               type="email"
               name="email"
               id="email"
@@ -80,29 +85,37 @@ export default function Home() {
               required
             />
             <input
+              className="form-control"
               type="password"
               name="password"
               id="password"
               placeholder="password"
               required
             />
-            <button type="submit">Registrati</button>
+            <button className="btn btn-primary" type="submit">
+              Registrati
+            </button>
           </div>
         </form>
-        <a onClick={handleSignIn}>Registrati</a>
+        <div className="containerLogin">
+          <a onClick={handleSignIn}>Altrimenti accedi</a>
+        </div>
       </div>
 
       {confirmCodeSignIn ? (
         <div>
           <form onSubmit={handleVerification}>
             <input
+              className="form-control"
               type="number"
               name="code"
               id="code"
               placeholder="verification code"
             />
 
-            <button type="submit">Invia</button>
+            <button className="btn btn-primary" type="submit">
+              Invia
+            </button>
           </form>
         </div>
       ) : (

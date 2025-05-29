@@ -6,7 +6,7 @@ export default function DefaultLayout() {
       <header>
         <nav></nav>
       </header>
-      <main className="container">
+      <main className="container login-container">
         <Outlet />
       </main>
     </div>
