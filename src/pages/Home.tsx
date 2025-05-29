@@ -4,22 +4,20 @@ import {
   CognitoUser,
   type ISignUpResult,
 } from "amazon-cognito-identity-js";
-
 import { poolData } from "../config";
 import { useState } from "react";
-import { useGlobalContext } from "../contexts/GlobalContext";
 
 export default function Home() {
   const userPool = new CognitoUserPool(poolData);
-  const { signInUser, setSignInUser, putUser } = useGlobalContext();
   const [confirmCodeSignIn, setConfirmCodeSignIn] = useState(false);
+  const [email, setEmail] = useState("");
 
   function handleVerification(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const code = formData.get("code")!.toString();
     const cognitoUser = new CognitoUser({
-      Username: signInUser!.email,
+      Username: email,
       Pool: userPool,
     });
 
@@ -30,16 +28,15 @@ export default function Home() {
       }
       alert("Utente confermato con successo!");
     });
-
-    putUser(cognitoUser.getUsername(), signInUser!.email, signInUser!.username);
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email")!.toString();
-    const username = formData.get("username")!.toString();
     const password = formData.get("password")!.toString();
+
+    setEmail(email);
 
     const attributeEmail = new CognitoUserAttribute({
       Name: "email",
@@ -61,7 +58,6 @@ export default function Home() {
         }
         var cognitoUser = result?.user;
         console.log("user name is " + cognitoUser?.getUsername());
-        setSignInUser({ username: username, email: email });
         setConfirmCodeSignIn(true);
       }
     );
@@ -76,13 +72,6 @@ export default function Home() {
       <div className="wrapperLoginSignin">
         <form onSubmit={handleSubmit}>
           <div className="containerLoginSignin">
-            <input
-              type="text"
-              name="username"
-              id="username"
-              placeholder="username"
-              required
-            />
             <input
               type="email"
               name="email"
