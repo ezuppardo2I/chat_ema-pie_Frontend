@@ -20,7 +20,7 @@ export default function Home() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userID: user.getUsername,
+          userID: user.getUsername(),
           username: username,
           email: email,
         }),
@@ -48,7 +48,7 @@ export default function Home() {
       attributeList,
       [],
       function (err: Error | undefined, result: ISignUpResult | undefined) {
-        if ((err as any).code === "UsernameExistException") {
+        if ((err as any).code === "UsernameExistsException") {
           alert(err?.message || JSON.stringify(err));
           return;
         } else {
@@ -66,6 +66,10 @@ export default function Home() {
     <>
       <div className="wrapperLoginSignin">
         <form onSubmit={handleSubmit}>
+          <input type="text" name="username" id="username" required />
+          <input type="email" name="email" id="email" required />
+          <input type="password" name="password" id="password" required />
+          <button type="submit">Registrati</button>
           <div className="containerLoginSignin">
             <input type="text" name="username" id="username" required />
             <input type="email" name="email" id="email" required />
