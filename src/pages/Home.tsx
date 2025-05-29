@@ -64,12 +64,14 @@ export default function Home() {
 
   return (
     <>
-      <div className="containerLogin">
+      <div className="wrapperLoginSignin">
         <form onSubmit={handleSubmit}>
-          <input type="username" name="username" id="username" required />
-          <input type="email" name="email" id="email" required />
-          <input type="password" name="password" id="password" required />
-          <button type="submit">Registrati</button>
+          <div className="containerLoginSignin">
+            <input type="text" name="username" id="username" required />
+            <input type="email" name="email" id="email" required />
+            <input type="password" name="password" id="password" required />
+            <button type="submit">Registrati</button>
+          </div>
         </form>
         <a onClick={handleSignIn}>Registrati</a>
       </div>
