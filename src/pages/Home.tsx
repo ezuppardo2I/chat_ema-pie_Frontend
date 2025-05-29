@@ -35,27 +35,20 @@ export default function Home() {
     const username = formData.get("username")!.toString();
     const password = formData.get("password")!.toString();
     const userPool = new CognitoUserPool(poolData);
-    const attributeList = [];
-    const dataEmail = {
+
+    const attributeEmail = new CognitoUserAttribute({
       Name: "email",
       Value: email,
-    };
-    const attributeEmail = new CognitoUserAttribute(dataEmail);
-    attributeList.push(attributeEmail);
-    userPool.signUp(
-      email,
-      password,
-      attributeList,
-      [],
-      function (err: Error | undefined, result: ISignUpResult | undefined) {
-        if ((err as any).code === "UsernameExistsException") {
-          alert(err?.message || JSON.stringify(err));
-          return;
-        } else {
-          putUser(result!.user, email, username);
-        }
+    });
+
+    userPool.signUp(email, password, [attributeEmail], [], (err, result) => {
+      if ((err as any).code === "UsernameExistsException") {
+        alert(err?.message || JSON.stringify(err));
+        return;
+      } else {
+        putUser(result!.user, email, username);
       }
-    );
+    });
   }
 
   function handleSignIn() {
@@ -66,10 +59,6 @@ export default function Home() {
     <>
       <div className="wrapperLoginSignin">
         <form onSubmit={handleSubmit}>
-          <input type="text" name="username" id="username" required />
-          <input type="email" name="email" id="email" required />
-          <input type="password" name="password" id="password" required />
-          <button type="submit">Registrati</button>
           <div className="containerLoginSignin">
             <input type="text" name="username" id="username" required />
             <input type="email" name="email" id="email" required />
