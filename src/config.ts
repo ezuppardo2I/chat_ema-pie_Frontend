@@ -1,4 +1,4 @@
 export const poolData = {
-  UserPoolId: "eu-west-2_J3U1r0lW1",
-  ClientId: "2gmsa2mnipo2lepi8ierspiaki",
+  UserPoolId: "eu-west-2_zb5EDjVB0",
+  ClientId: "jl7gandp81d22bkn0b23lgops",
 };
