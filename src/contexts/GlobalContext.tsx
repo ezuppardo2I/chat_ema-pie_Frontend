@@ -1,11 +1,17 @@
-// GlobalContext.tsx
 import type { CognitoUser } from "amazon-cognito-identity-js";
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-// Tipo per il context
 type GlobalContextType = {
-  signInUser: CognitoUser | null;
-  setSignInUser: (user: CognitoUser) => void;
+  signInUser: {
+    userId: string;
+    username: string;
+    email: string;
+  } | null;
+  setSignInUser: (user: {
+    userId: string;
+    username: string;
+    email: string;
+  }) => void;
   putUser: (
     user: CognitoUser,
     email: string,
@@ -13,7 +19,6 @@ type GlobalContextType = {
   ) => Promise<void>;
 };
 
-// Valore iniziale (tipi dummy per inizializzazione)
 const GlobalContext = createContext<GlobalContextType>({
   signInUser: null,
   setSignInUser: () => {},
@@ -21,7 +26,11 @@ const GlobalContext = createContext<GlobalContextType>({
 });
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
-  const [signInUser, setSignInUser] = useState<CognitoUser | null>(null);
+  const [signInUser, setSignInUser] = useState({
+    userId: "",
+    username: "",
+    email: "",
+  });
 
   async function putUser(user: CognitoUser, email: string, username: string) {
     await fetch(
