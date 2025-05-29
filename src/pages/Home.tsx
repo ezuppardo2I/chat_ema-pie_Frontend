@@ -1,7 +1,6 @@
 import {
   CognitoUserPool,
   CognitoUserAttribute,
-  type ISignUpResult,
   CognitoUser,
 } from "amazon-cognito-identity-js";
 
