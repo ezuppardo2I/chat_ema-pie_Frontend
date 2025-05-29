@@ -7,9 +7,10 @@ import {
 
 import { poolData } from "../config";
 import { useState } from "react";
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 export default function Home() {
-  const [isLogged, setIsLogged] = useState(false);
+  const { signInUser, setSignInUser, putUser } = useGlobalContext();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,6 +40,7 @@ export default function Home() {
         }
         var cognitoUser = result?.user;
         console.log("user name is " + cognitoUser?.getUsername());
+        setSignInUser({ username: username, email: email });
       }
     );
   }
