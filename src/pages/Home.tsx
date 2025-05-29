@@ -10,7 +10,29 @@ import { useState } from "react";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
 export default function Home() {
+  const userPool = new CognitoUserPool(poolData);
   const { signInUser, setSignInUser, putUser } = useGlobalContext();
+  const [confirmCodeSignIn, setConfirmCodeSignIn] = useState(false);
+
+  function handleVerification(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const code = formData.get("code")!.toString();
+    const cognitoUser = new CognitoUser({
+      Username: signInUser!.email,
+      Pool: userPool,
+    });
+
+    cognitoUser.confirmRegistration(code, false, (err) => {
+      if (err) {
+        alert(err.message || JSON.stringify(err));
+        return;
+      }
+      alert("Utente confermato con successo!");
+    });
+
+    putUser(cognitoUser.getUsername(), signInUser!.email, signInUser!.username);
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -18,7 +40,6 @@ export default function Home() {
     const email = formData.get("email")!.toString();
     const username = formData.get("username")!.toString();
     const password = formData.get("password")!.toString();
-    const userPool = new CognitoUserPool(poolData);
 
     const attributeEmail = new CognitoUserAttribute({
       Name: "email",
@@ -41,6 +62,7 @@ export default function Home() {
         var cognitoUser = result?.user;
         console.log("user name is " + cognitoUser?.getUsername());
         setSignInUser({ username: username, email: email });
+        setConfirmCodeSignIn(true);
       }
     );
   }
@@ -80,6 +102,23 @@ export default function Home() {
         </form>
         <a onClick={handleSignIn}>Registrati</a>
       </div>
+
+      {confirmCodeSignIn ? (
+        <div>
+          <form onSubmit={handleVerification}>
+            <input
+              type="number"
+              name="code"
+              id="code"
+              placeholder="verification code"
+            />
+
+            <button type="submit">Invia</button>
+          </form>
+        </div>
+      ) : (
+        ""
+      )}
     </>
   );
 }
