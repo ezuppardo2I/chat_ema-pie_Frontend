@@ -12,9 +12,11 @@ import { fetchAuthSession } from "aws-amplify/auth";
 import { ConnectionState } from "aws-amplify/api";
 import { PubSub } from "@aws-amplify/pubsub";
 import { Hub } from "aws-amplify/utils";
+import { User } from "../model/User";
 
 export default function Home() {
-  const { isLoggedIn, setIsLoggedIn, connectToIoT, user } = useGlobalContext();
+  const { isLoggedIn, setIsLoggedIn, connectToIoT, user, getUser, setUser } =
+    useGlobalContext();
   const [isSignIned, setIsSignIned] = useState(true);
   const userPool = new CognitoUserPool(poolData);
 
@@ -22,12 +24,24 @@ export default function Home() {
     const currentUser = userPool.getCurrentUser();
     if (currentUser) {
       currentUser.getSession(
-        (err: Error, session: CognitoUserSession | null) => {
+        async (err: Error, session: CognitoUserSession | null) => {
           if (err || !session || !session.isValid()) {
             setIsLoggedIn(false);
             return;
           }
+          const idToken = session.getIdToken().getJwtToken();
+          const userID = JSON.parse(atob(idToken.split(".")[1])).sub;
           setIsLoggedIn(true);
+          const res = await getUser(userID);
+          console.log("User fetched:", res);
+          setUser(
+            new User(
+              res.body.data.userID,
+              res.body.data.email,
+              res.body.data.avatarImage,
+              res.body.data.lobbiesIDs
+            )
+          );
         }
       );
     }
