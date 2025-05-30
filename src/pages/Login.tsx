@@ -12,7 +12,7 @@ interface LoginProps {
 
 export default function Login({ setIsSignIned }: LoginProps) {
   const userPool = new CognitoUserPool(poolData);
-  const { putUser, getUser } = useGlobalContext();
+  const { putUser, getUser, setIsLoggedIn } = useGlobalContext();
 
   function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -43,6 +43,7 @@ export default function Login({ setIsSignIned }: LoginProps) {
         } else {
           console.log("Utente già esistente", resGetUser);
         }
+        setIsLoggedIn(true);
       },
       onFailure: (err) => {
         alert(err.message || JSON.stringify(err));
