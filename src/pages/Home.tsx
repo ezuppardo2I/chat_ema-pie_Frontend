@@ -15,10 +15,24 @@ import { Hub } from "aws-amplify/utils";
 import { User } from "../model/User";
 
 export default function Home() {
-  const { isLoggedIn, setIsLoggedIn, connectToIoT, user, getUser, setUser } =
-    useGlobalContext();
+  const {
+    isLoggedIn,
+    setIsLoggedIn,
+    connectToIoT,
+    patchUserLobbies,
+    user,
+    getUser,
+    setUser,
+    putLobby,
+    getUsers,
+  } = useGlobalContext();
   const [isSignIned, setIsSignIned] = useState(true);
   const userPool = new CognitoUserPool(poolData);
+  const [users, setUsers] = useState<User[]>([]);
+  const [userIDs, setUserIDs] = useState<string[]>([]);
+  const [userID, setUserID] = useState<string>("");
+
+  console.log(users);
 
   useEffect(() => {
     const currentUser = userPool.getCurrentUser();
@@ -33,7 +47,6 @@ export default function Home() {
           const userID = JSON.parse(atob(idToken.split(".")[1])).sub;
           setIsLoggedIn(true);
           const res = await getUser(userID);
-          console.log("User fetched:", res);
           setUser(
             new User(
               res.body.data.userID,
@@ -41,6 +54,19 @@ export default function Home() {
               res.body.data.avatarImage,
               res.body.data.lobbiesIDs
             )
+          );
+
+          setUsers(
+            (await getUsers()).map((user: any) => {
+              const newUser = new User(
+                user.userID,
+                user.email,
+                user.avatarImage,
+                user.lobbiesIDs
+              );
+              console.log("utente" + newUser);
+              return newUser;
+            })
           );
         }
       );
@@ -87,11 +113,103 @@ export default function Home() {
     });
   }
 
+  async function handlePutLobby(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name")!.toString();
+
+    const lobbyID = await putLobby(name, [...userIDs, user.userId]);
+
+    userIDs.forEach(async (id) => {
+      const userID = id;
+      await patchUserLobbies(userID, [lobbyID]);
+    });
+
+    setUserIDs([]);
+    setUserID("");
+  }
+
+  function handleAddUserToLobby(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    if (userID) {
+      setUserIDs((prev) => [...prev, userID]);
+    }
+  }
+
   return (
     <>
+      <div
+        className="modal fade"
+        id="exampleModal"
+        tabIndex={-1}
+        aria-labelledby="exampleModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="exampleModalLabel">
+                Crea una nuova lobby
+              </h1>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <form onSubmit={handlePutLobby}>
+              <div className="modal-body">
+                <input
+                  className="form-control"
+                  type="text"
+                  name="name"
+                  id="name"
+                  placeholder="nome"
+                />
+
+                <select
+                  name="userIDs"
+                  id="userIDs"
+                  onChange={(e) => setUserID(e.target.value)}
+                >
+                  <option value="">Seleziona utenti</option>
+                  {users.map((user) => (
+                    <option key={user.userId} value={user.userId}>
+                      {user.email}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleAddUserToLobby}
+                  className="btn btn-primary"
+                >
+                  Aggiungi membro
+                </button>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Annulla
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  data-bs-dismiss="modal"
+                >
+                  Crea
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
       {isLoggedIn ? (
         <>
-          <p>loggato</p>
+          {/* <p>loggato</p>
           <button onClick={handleLogout} className="btn btn-danger">
             Logout
           </button>
@@ -99,7 +217,23 @@ export default function Home() {
           <p>
             Benvenuto {user.userId}, {user.email}, {user.lobbiesIDs}
           </p>
-          <img src={user.avatarImage} alt="" />
+          <img src={user.avatarImage} alt="" /> */}
+
+          <div className="chat-wrapper">
+            <div className="chat-header">
+              <button
+                data-bs-toggle="modal"
+                data-bs-target="#exampleModal"
+                className="btn btn-primary"
+              >
+                Aggiungi lobby
+              </button>
+            </div>
+            <div className="chat-content">
+              <div className="chat-lobbies"></div>
+              <div className="chat-messages"></div>
+            </div>
+          </div>
         </>
       ) : (
         <>

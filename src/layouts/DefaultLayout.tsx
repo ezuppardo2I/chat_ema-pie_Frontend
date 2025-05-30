@@ -6,7 +6,7 @@ export default function DefaultLayout() {
       <header>
         <nav></nav>
       </header>
-      <main className="container login-container">
+      <main className="container chat-container">
         <Outlet />
       </main>
     </div>

@@ -15,6 +15,9 @@ type GlobalContextType = {
   connectToIoT: (cognitoIdentityID: string | undefined) => Promise<void>;
   user: User;
   setUser: React.Dispatch<React.SetStateAction<User>>;
+  putLobby: (name: string, userIDs: string[]) => Promise<any>;
+  getUsers: () => Promise<any>;
+  patchUserLobbies: (userID: string, lobbyID: string[]) => Promise<void>;
 };
 
 const GlobalContext = createContext<GlobalContextType>({
@@ -25,6 +28,9 @@ const GlobalContext = createContext<GlobalContextType>({
   connectToIoT: async () => {},
   setUser: () => {},
   user: new User("", "", "", []),
+  putLobby: async () => {},
+  getUsers: async () => {},
+  patchUserLobbies: async () => {},
 });
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
@@ -83,6 +89,52 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     console.log(data);
   }
 
+  async function putLobby(name: string, userIDs: string[]) {
+    const res = await fetch(
+      "https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/lobby",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: name,
+          userIDs: userIDs,
+        }),
+      }
+    );
+
+    const data = await res.json();
+    return data.lobbyID;
+  }
+
+  async function getUsers() {
+    const res = await fetch(
+      "https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/user"
+    );
+    const data = await res.json();
+
+    return data.data;
+  }
+
+  async function patchUserLobbies(userID: string, lobbyID: string[]) {
+    console.log("patchUserLobbies", userID, lobbyID);
+    const res = await fetch(
+      "https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/user/lobbies",
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userID: userID,
+          lobbiesIDs: lobbyID,
+        }),
+      }
+    );
+    console.log("patch" + res.json());
+  }
+
   return (
     <GlobalContext.Provider
       value={{
@@ -93,6 +145,9 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
         connectToIoT,
         user,
         setUser,
+        putLobby,
+        getUsers,
+        patchUserLobbies,
       }}
     >
       {children}
