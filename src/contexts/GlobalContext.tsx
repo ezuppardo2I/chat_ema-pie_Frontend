@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import { User } from "../model/User";
 
 type GlobalContextType = {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -6,6 +13,8 @@ type GlobalContextType = {
   putUser: (userID: string, email: string) => Promise<void>;
   getUser: (userID: string) => Promise<any>;
   connectToIoT: (cognitoIdentityID: string | undefined) => Promise<void>;
+  user: User;
+  setUser: React.Dispatch<React.SetStateAction<User>>;
 };
 
 const GlobalContext = createContext<GlobalContextType>({
@@ -14,10 +23,18 @@ const GlobalContext = createContext<GlobalContextType>({
   putUser: async () => {},
   getUser: async () => {},
   connectToIoT: async () => {},
+  setUser: () => {},
+  user: new User("", "", "", []),
 });
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User>(new User("", "", "", []));
+
+  useEffect(() => {
+    if (isLoggedIn) {
+    }
+  }, [isLoggedIn]);
 
   async function putUser(userID: string, email: string) {
     await fetch(
@@ -68,7 +85,15 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
 
   return (
     <GlobalContext.Provider
-      value={{ putUser, getUser, setIsLoggedIn, isLoggedIn, connectToIoT }}
+      value={{
+        putUser,
+        getUser,
+        setIsLoggedIn,
+        isLoggedIn,
+        connectToIoT,
+        user,
+        setUser,
+      }}
     >
       {children}
     </GlobalContext.Provider>

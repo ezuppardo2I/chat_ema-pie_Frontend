@@ -6,7 +6,6 @@ import {
 } from "amazon-cognito-identity-js";
 import { poolData } from "../config";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
   setIsSignIned: React.Dispatch<React.SetStateAction<boolean>>;
@@ -16,7 +15,6 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
   const userPool = new CognitoUserPool(poolData);
   const [confirmCodeSignIn, setConfirmCodeSignIn] = useState(false);
   const [email, setEmail] = useState("");
-  const navigate = useNavigate();
 
   function handleVerification(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -33,7 +31,6 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
         return;
       }
       alert("Utente confermato con successo!");
-      navigate("/login");
     });
   }
 

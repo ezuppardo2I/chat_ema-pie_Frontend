@@ -14,7 +14,7 @@ import { PubSub } from "@aws-amplify/pubsub";
 import { Hub } from "aws-amplify/utils";
 
 export default function Home() {
-  const { isLoggedIn, setIsLoggedIn, connectToIoT } = useGlobalContext();
+  const { isLoggedIn, setIsLoggedIn, connectToIoT, user } = useGlobalContext();
   const [isSignIned, setIsSignIned] = useState(true);
   const userPool = new CognitoUserPool(poolData);
 
@@ -82,6 +82,10 @@ export default function Home() {
             Logout
           </button>
           <button onClick={handleIotConnection}>connessione iot</button>
+          <p>
+            Benvenuto {user.userId}, {user.email}, {user.lobbiesIDs}
+          </p>
+          <img src={user.avatarImage} alt="" />
         </>
       ) : (
         <>

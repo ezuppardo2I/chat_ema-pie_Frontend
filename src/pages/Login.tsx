@@ -5,6 +5,7 @@ import {
 } from "amazon-cognito-identity-js";
 import { poolData } from "../config";
 import { useGlobalContext } from "../contexts/GlobalContext";
+import { User } from "../model/User";
 
 interface LoginProps {
   setIsSignIned: React.Dispatch<React.SetStateAction<boolean>>;
@@ -12,7 +13,7 @@ interface LoginProps {
 
 export default function Login({ setIsSignIned }: LoginProps) {
   const userPool = new CognitoUserPool(poolData);
-  const { putUser, getUser, setIsLoggedIn } = useGlobalContext();
+  const { putUser, getUser, setIsLoggedIn, setUser } = useGlobalContext();
 
   function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -33,6 +34,7 @@ export default function Login({ setIsSignIned }: LoginProps) {
     cognitoUser.authenticateUser(authDetails, {
       onSuccess: async (session) => {
         const idToken = session.getIdToken().getJwtToken();
+        console.log("Login effettuato con successo", idToken);
         const payload = JSON.parse(atob(idToken.split(".")[1]));
         const userID = payload.sub;
 
@@ -44,6 +46,16 @@ export default function Login({ setIsSignIned }: LoginProps) {
           console.log("Utente già esistente", resGetUser);
         }
         setIsLoggedIn(true);
+        const res = await getUser(userID);
+        console.log("User fetched:", res);
+        setUser(
+          new User(
+            res.body.userID,
+            res.body.email,
+            res.body.avatarImage,
+            res.body.lobbiesIDs
+          )
+        );
       },
       onFailure: (err) => {
         alert(err.message || JSON.stringify(err));
