@@ -6,7 +6,11 @@ import {
 import { poolData } from "../config";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
-export default function Login() {
+interface LoginProps {
+  setIsSignIned: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export default function Login({ setIsSignIned }: LoginProps) {
   const userPool = new CognitoUserPool(poolData);
   const { putUser, getUser } = useGlobalContext();
 
@@ -32,7 +36,13 @@ export default function Login() {
         const payload = JSON.parse(atob(idToken.split(".")[1]));
         const userID = payload.sub;
 
-        await putUser(userID, email);
+        const resGetUser = await getUser(userID);
+
+        if (resGetUser.status === 404) {
+          await putUser(userID, email);
+        } else {
+          console.log("Utente già esistente", resGetUser);
+        }
       },
       onFailure: (err) => {
         alert(err.message || JSON.stringify(err));
@@ -42,22 +52,40 @@ export default function Login() {
 
   return (
     <>
-      <div>
+      <div className="wrapperLoginSignin">
+        <h3>Login</h3>
         <form onSubmit={handleLogin}>
-          <input
-            className="form-control"
-            type="email"
-            name="email"
-            id="email"
-          />
-          <input
-            className="form-control"
-            type="password"
-            name="password"
-            id="password"
-          />
-          <button type="submit">Login</button>
+          <div className="containerLoginSignin">
+            <input
+              className="form-control"
+              type="email"
+              name="email"
+              id="email"
+              placeholder="Email"
+            />
+            <input
+              className="form-control"
+              type="password"
+              name="password"
+              id="password"
+              placeholder="password"
+            />
+            <button className="btn btn-primary" type="submit">
+              Accedi
+            </button>
+          </div>
         </form>
+        <div className="containerLogin">
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setIsSignIned((prev: boolean) => !prev);
+            }}
+          >
+            Altrimenti registrati
+          </a>
+        </div>
       </div>
     </>
   );

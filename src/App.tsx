@@ -3,7 +3,6 @@ import "./App.css";
 import DefaultLayout from "./layouts/DefaultLayout";
 import Home from "./pages/Home";
 import { GlobalProvider } from "./contexts/GlobalContext";
-import Login from "./pages/Login";
 
 function App() {
   return (
@@ -13,7 +12,6 @@ function App() {
           <Routes>
             <Route path="/" element={<DefaultLayout />}>
               <Route index element={<Home />} />
-              <Route path="login" element={<Login />} />
             </Route>
           </Routes>
         </BrowserRouter>

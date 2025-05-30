@@ -39,7 +39,10 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
       }
     );
     const data = await res.json();
-    return data;
+    return {
+      status: res.status,
+      body: data,
+    };
   }
 
   return (
