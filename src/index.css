@@ -67,6 +67,9 @@ body {
 .chat-messages {
   flex: 0 0 70%;
   background-color: lightblue;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .chat-lobby {
@@ -79,4 +82,18 @@ body {
 
 .chat-lobby:hover {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.chat-messages-header {
+  flex: 0 0 10%;
+}
+
+.chat-messages-content {
+  flex: 0 0 80%;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+.chat-messages-footer {
+  flex: 0 0 10%;
 }

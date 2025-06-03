@@ -26,6 +26,8 @@ export default function Home() {
     putLobby,
     getUsers,
     getLobby,
+    getMessages,
+    putMessage,
   } = useGlobalContext();
   const [isSignIned, setIsSignIned] = useState(true);
   const userPool = new CognitoUserPool(poolData);
@@ -33,9 +35,14 @@ export default function Home() {
   const [userIDs, setUserIDs] = useState<string[]>([]);
   const [userID, setUserID] = useState<string>("default");
   const [lobbies, setLobbies] = useState<any>([]);
-  const [activeLobby, setActiveLobby] = useState<any>({});
-
-  console;
+  const [activeLobby, setActiveLobby] = useState<any | null>(null);
+  const [messagesList, setMessagesList] = useState<any[]>([]);
+  const [pubsub, setPubsub] = useState(
+    new PubSub({
+      region: "eu-west-2",
+      endpoint: "wss://a238raa4ef5q2d-ats.iot.eu-west-2.amazonaws.com/mqtt",
+    })
+  );
 
   useEffect(() => {
     const currentUser = userPool.getCurrentUser();
@@ -64,6 +71,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (!user || !user.lobbiesIDs) return;
     user.lobbiesIDs.map(async (lobbyID) => {
       const res = await getLobby(lobbyID);
       setLobbies((prev: any) => [...prev, res]);
@@ -89,15 +97,11 @@ export default function Home() {
     connectToIoT(info.identityId);
     setActiveLobby(lobby);
     const lobbyID = lobby.lobbyID;
-
-    const pubsub = new PubSub({
-      region: "eu-west-2",
-      endpoint: "wss://a238raa4ef5q2d-ats.iot.eu-west-2.amazonaws.com/mqtt",
-    });
+    setMessagesList(await getMessages(lobbyID));
 
     pubsub.subscribe({ topics: [lobbyID] }).subscribe({
       next: (data) => {
-        console.log(data);
+        setMessagesList((prev) => [...prev, data]);
       },
     });
 
@@ -167,6 +171,26 @@ export default function Home() {
       );
 
     setUsers(filteredUsers);
+  }
+
+  async function handlePutMessage(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const messageText = formData.get("messageText")!.toString();
+
+    await putMessage(activeLobby.lobbyID, messageText, user.userId);
+    try {
+      await pubsub.publish({
+        topics: [activeLobby.lobbyID],
+        message: {
+          messageText,
+          userID: user.userId,
+        },
+      });
+    } catch (error) {
+      console.error("Error publishing message:", error);
+    }
+    setMessagesList((prev) => [...prev, { messageText, userID: user.userId }]);
   }
 
   return (
@@ -282,8 +306,37 @@ export default function Home() {
                 ))}
               </div>
               <div className="chat-messages">
-                {activeLobby ? (
-                  <h3>{activeLobby.name}</h3>
+                {activeLobby != null ? (
+                  <>
+                    <div className="chat-messages-header">
+                      <h3>{activeLobby.name}</h3>
+                    </div>
+                    <div className="chat-messages-content">
+                      {messagesList ? (
+                        messagesList.map((message, index) => (
+                          <div key={index} className="chat-message">
+                            <p>{message.messageText}</p>
+                            <span>{message.userID}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <span>nessun messaggio</span>
+                      )}
+                    </div>
+                    <div className="chat-messages-footer">
+                      <form onSubmit={handlePutMessage}>
+                        <input
+                          type="text"
+                          name="messageText"
+                          id="messageText"
+                          placeholder="inserisci il tuo messaggio"
+                        />
+                        <button className="btn btn-primary" type="submit">
+                          Invia
+                        </button>
+                      </form>
+                    </div>
+                  </>
                 ) : (
                   <span>Seleziona una lobby</span>
                 )}

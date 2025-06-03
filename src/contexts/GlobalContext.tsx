@@ -19,6 +19,12 @@ type GlobalContextType = {
   getUsers: () => Promise<any>;
   patchUserLobbies: (userID: string, lobbyID: string[]) => Promise<void>;
   getLobby: (lobbyID: string) => Promise<any>;
+  getMessages: (lobbyID: string) => Promise<any>;
+  putMessage: (
+    lobbyID: string,
+    messageText: string,
+    userID: string
+  ) => Promise<void>;
 };
 
 const GlobalContext = createContext<GlobalContextType>({
@@ -33,6 +39,8 @@ const GlobalContext = createContext<GlobalContextType>({
   getUsers: async () => {},
   patchUserLobbies: async () => {},
   getLobby: async () => {},
+  getMessages: async () => {},
+  putMessage: async () => {},
 });
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
@@ -88,7 +96,6 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
       }
     );
     const data = await res.json();
-    console.log(data);
   }
 
   async function putLobby(name: string, userIDs: string[]) {
@@ -128,6 +135,38 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     return data.data;
   }
 
+  async function getMessages(lobbyID: string) {
+    const res = await fetch(
+      `https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/message/${lobbyID}`
+    );
+    const data = await res.json();
+
+    return data.data;
+  }
+
+  async function putMessage(
+    lobbyID: string,
+    messageText: string,
+    userID: string
+  ) {
+    const res = await fetch(
+      "https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/message",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          lobbyID: lobbyID,
+          messageText: messageText,
+          userID: userID,
+        }),
+      }
+    );
+    const data = await res.json();
+    return data.data;
+  }
+
   async function patchUserLobbies(userID: string, lobbyID: string[]) {
     console.log("patchUserLobbies", userID, lobbyID);
     const res = await fetch(
@@ -149,6 +188,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   return (
     <GlobalContext.Provider
       value={{
+        putMessage,
         putUser,
         getUser,
         setIsLoggedIn,
@@ -160,6 +200,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
         getUsers,
         getLobby,
         patchUserLobbies,
+        getMessages,
       }}
     >
       {children}
