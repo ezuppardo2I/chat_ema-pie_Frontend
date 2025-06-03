@@ -190,7 +190,6 @@ export default function Home() {
     } catch (error) {
       console.error("Error publishing message:", error);
     }
-    setMessagesList((prev) => [...prev, { messageText, userID: user.userId }]);
   }
 
   return (
