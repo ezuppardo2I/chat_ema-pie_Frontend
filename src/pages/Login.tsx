@@ -74,7 +74,7 @@ export default function Login({ setIsSignIned }: LoginProps) {
               type="email"
               name="email"
               id="email"
-              placeholder="Email"
+              placeholder="email"
             />
             <input
               className="form-control"
