@@ -50,10 +50,10 @@ export default function Login({ setIsSignIned }: LoginProps) {
         console.log("User fetched:", res);
         setUser(
           new User(
-            res.body.userID,
-            res.body.email,
-            res.body.avatarImage,
-            res.body.lobbiesIDs
+            res.body.data.userID,
+            res.body.data.email,
+            res.body.data.avatarImage,
+            res.body.data.lobbiesIDs
           )
         );
       },

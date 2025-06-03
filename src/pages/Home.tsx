@@ -9,7 +9,7 @@ import {
 import { poolData } from "../config";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { fetchAuthSession } from "aws-amplify/auth";
-import { ConnectionState } from "aws-amplify/api";
+import { ConnectionState, get } from "aws-amplify/api";
 import { PubSub } from "@aws-amplify/pubsub";
 import { Hub } from "aws-amplify/utils";
 import { User } from "../model/User";
@@ -25,14 +25,17 @@ export default function Home() {
     setUser,
     putLobby,
     getUsers,
+    getLobby,
   } = useGlobalContext();
   const [isSignIned, setIsSignIned] = useState(true);
   const userPool = new CognitoUserPool(poolData);
   const [users, setUsers] = useState<User[]>([]);
   const [userIDs, setUserIDs] = useState<string[]>([]);
-  const [userID, setUserID] = useState<string>("");
+  const [userID, setUserID] = useState<string>("default");
+  const [lobbies, setLobbies] = useState<any>([]);
+  const [activeLobby, setActiveLobby] = useState<any>({});
 
-  console.log(users);
+  console;
 
   useEffect(() => {
     const currentUser = userPool.getCurrentUser();
@@ -55,23 +58,22 @@ export default function Home() {
               res.body.data.lobbiesIDs
             )
           );
-
-          setUsers(
-            (await getUsers()).map((user: any) => {
-              const newUser = new User(
-                user.userID,
-                user.email,
-                user.avatarImage,
-                user.lobbiesIDs
-              );
-              console.log("utente" + newUser);
-              return newUser;
-            })
-          );
         }
       );
     }
   }, []);
+
+  useEffect(() => {
+    user.lobbiesIDs.map(async (lobbyID) => {
+      const res = await getLobby(lobbyID);
+      setLobbies((prev: any) => [...prev, res]);
+    });
+  }, [user]);
+
+  function handleCloseModal() {
+    setUserIDs([]);
+    setUserID("default");
+  }
 
   function handleLogout() {
     const cognitoUser = new CognitoUser({
@@ -82,16 +84,18 @@ export default function Home() {
     setIsLoggedIn(false);
   }
 
-  async function handleIotConnection() {
+  async function handleIotConnection(lobby: any) {
     const info = await fetchAuthSession();
     connectToIoT(info.identityId);
+    setActiveLobby(lobby);
+    const lobbyID = lobby.lobbyID;
 
     const pubsub = new PubSub({
       region: "eu-west-2",
       endpoint: "wss://a238raa4ef5q2d-ats.iot.eu-west-2.amazonaws.com/mqtt",
     });
 
-    pubsub.subscribe({ topics: ["test"] }).subscribe({
+    pubsub.subscribe({ topics: [lobbyID] }).subscribe({
       next: (data) => {
         console.log(data);
       },
@@ -125,8 +129,19 @@ export default function Home() {
       await patchUserLobbies(userID, [lobbyID]);
     });
 
+    await patchUserLobbies(user.userId, [lobbyID]);
+    const res = await getUser(userID);
+    setUser(
+      new User(
+        res.body.data.userID,
+        res.body.data.email,
+        res.body.data.avatarImage,
+        res.body.data.lobbiesIDs
+      )
+    );
+
     setUserIDs([]);
-    setUserID("");
+    setUserID("default");
   }
 
   function handleAddUserToLobby(e: React.MouseEvent<HTMLButtonElement>) {
@@ -134,6 +149,24 @@ export default function Home() {
     if (userID) {
       setUserIDs((prev) => [...prev, userID]);
     }
+  }
+
+  async function handleGetUsers() {
+    const allUsers = await getUsers();
+
+    const filteredUsers = allUsers
+      .filter((userMap: any) => userMap.userID !== user.userId)
+      .map(
+        (userMap: any) =>
+          new User(
+            userMap.userID,
+            userMap.email,
+            userMap.avatarImage,
+            userMap.lobbiesIDs
+          )
+      );
+
+    setUsers(filteredUsers);
   }
 
   return (
@@ -154,6 +187,7 @@ export default function Home() {
               <button
                 type="button"
                 className="btn-close"
+                onClick={handleCloseModal}
                 data-bs-dismiss="modal"
                 aria-label="Close"
               ></button>
@@ -172,8 +206,9 @@ export default function Home() {
                   name="userIDs"
                   id="userIDs"
                   onChange={(e) => setUserID(e.target.value)}
+                  value={userID}
                 >
-                  <option value="">Seleziona utenti</option>
+                  <option value="default">Seleziona utenti</option>
                   {users.map((user) => (
                     <option key={user.userId} value={user.userId}>
                       {user.email}
@@ -221,17 +256,38 @@ export default function Home() {
 
           <div className="chat-wrapper">
             <div className="chat-header">
-              <button
-                data-bs-toggle="modal"
-                data-bs-target="#exampleModal"
-                className="btn btn-primary"
-              >
-                Aggiungi lobby
-              </button>
+              <h3>Ciao, {user.email}</h3>
+              <div>
+                <button
+                  onClick={handleGetUsers}
+                  data-bs-toggle="modal"
+                  data-bs-target="#exampleModal"
+                  className="btn btn-primary"
+                >
+                  Aggiungi lobby
+                </button>
+              </div>
             </div>
             <div className="chat-content">
-              <div className="chat-lobbies"></div>
-              <div className="chat-messages"></div>
+              <div className="chat-lobbies">
+                <h4>Elenco lobby</h4>
+                {lobbies.map((lobby: any) => (
+                  <div
+                    key={lobby.lobbyID}
+                    className="chat-lobby"
+                    onClick={() => handleIotConnection(lobby)}
+                  >
+                    <h5>{lobby.name}</h5>
+                  </div>
+                ))}
+              </div>
+              <div className="chat-messages">
+                {activeLobby ? (
+                  <h3>{activeLobby.name}</h3>
+                ) : (
+                  <span>Seleziona una lobby</span>
+                )}
+              </div>
             </div>
           </div>
         </>
