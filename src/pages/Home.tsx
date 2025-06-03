@@ -44,6 +44,9 @@ export default function Home() {
     })
   );
 
+  // Aggiungi stato per il messaggio
+  const [messageText, setMessageText] = useState("");
+
   useEffect(() => {
     const currentUser = userPool.getCurrentUser();
     if (currentUser) {
@@ -173,10 +176,10 @@ export default function Home() {
     setUsers(filteredUsers);
   }
 
+  // Modifica il metodo per gestire il messaggio
   async function handlePutMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const messageText = formData.get("messageText")!.toString();
+    if (!messageText.trim()) return; // Evita l'invio di messaggi vuoti
 
     await putMessage(activeLobby.lobbyID, messageText, user.userId);
     try {
@@ -187,6 +190,9 @@ export default function Home() {
           userID: user.userId,
         },
       });
+
+      // Reset del campo input dopo l'invio del messaggio
+      setMessageText("");
     } catch (error) {
       console.error("Error publishing message:", error);
     }
@@ -267,16 +273,6 @@ export default function Home() {
       </div>
       {isLoggedIn ? (
         <>
-          {/* <p>loggato</p>
-          <button onClick={handleLogout} className="btn btn-danger">
-            Logout
-          </button>
-          <button onClick={handleIotConnection}>connessione iot</button>
-          <p>
-            Benvenuto {user.userId}, {user.email}, {user.lobbiesIDs}
-          </p>
-          <img src={user.avatarImage} alt="" /> */}
-
           <div className="chat-wrapper">
             <div className="chat-header">
               <h3>Ciao, {user.email}</h3>
@@ -313,9 +309,24 @@ export default function Home() {
                     <div className="chat-messages-content">
                       {messagesList ? (
                         messagesList.map((message, index) => (
-                          <div key={index} className="chat-message">
-                            <p>{message.messageText}</p>
-                            <span>{message.userID}</span>
+                          <div
+                            className={`container-message ${
+                              message.userID === user.userId
+                                ? "own-container-message"
+                                : ""
+                            }`}
+                          >
+                            <div
+                              key={index}
+                              className={`chat-message ${
+                                message.userID === user.userId
+                                  ? "own-chat-message"
+                                  : ""
+                              }`}
+                            >
+                              <span>{message.userID}</span>
+                              <span>{message.messageText}</span>
+                            </div>
                           </div>
                         ))
                       ) : (
@@ -323,16 +334,24 @@ export default function Home() {
                       )}
                     </div>
                     <div className="chat-messages-footer">
-                      <form onSubmit={handlePutMessage}>
+                      <form
+                        className="input-message-container"
+                        onSubmit={handlePutMessage}
+                      >
                         <input
+                          className="form-control"
                           type="text"
                           name="messageText"
                           id="messageText"
                           placeholder="inserisci il tuo messaggio"
+                          value={messageText}
+                          onChange={(e) => setMessageText(e.target.value)}
                         />
-                        <button className="btn btn-primary" type="submit">
-                          Invia
-                        </button>
+                        <div className="send-button-container">
+                          <button className="btn btn-primary" type="submit">
+                            Invia
+                          </button>
+                        </div>
                       </form>
                     </div>
                   </>
