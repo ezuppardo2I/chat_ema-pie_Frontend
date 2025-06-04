@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { act, useEffect, useState } from "react";
 import SignIn from "../components/SignIn";
 import Login from "./Login";
 import {
@@ -48,6 +48,7 @@ export default function Home() {
       endpoint: "wss://a238raa4ef5q2d-ats.iot.eu-west-2.amazonaws.com/mqtt",
     })
   );
+  const [usersInfo, setUsersInfo] = useState<any[]>([]);
 
   const [messageText, setMessageText] = useState("");
 
@@ -91,6 +92,22 @@ export default function Home() {
     setUserID("default");
   }
 
+  async function loadUsersInfo(userIDsActiveLobby: string[]) {
+    const usersInfoData = await Promise.all(
+      userIDsActiveLobby.map(async (userID) => {
+        const response = await getUser(userID);
+        return new User(
+          response.body.data.userID,
+          response.body.data.email,
+          response.body.data.username,
+          response.body.data.avatarImage,
+          response.body.data.lobbiesIDs
+        );
+      })
+    );
+    setUsersInfo(usersInfoData);
+  }
+
   function handleLogout() {
     const cognitoUser = new CognitoUser({
       Username: userPool.getCurrentUser()!.getUsername(),
@@ -105,6 +122,11 @@ export default function Home() {
     connectToIoT(info.identityId);
     setActiveLobby(lobby);
     const lobbyID = lobby.lobbyID;
+    const userIDsActiveLobby = lobby.userIDs;
+
+    setUsersInfo([]);
+    await loadUsersInfo(userIDsActiveLobby);
+
     setMessagesList(await getMessages(lobbyID));
 
     pubsub.subscribe({ topics: [lobbyID] }).subscribe({
@@ -142,7 +164,7 @@ export default function Home() {
     });
 
     await patchUserLobbies(user.userID, [lobbyID]);
-    const res = await getUser(userID);
+    const res = await getUser(user.userID);
     setUser(
       new User(
         res.body.data.userID,
@@ -337,7 +359,12 @@ export default function Home() {
           <>
             <div className="chat-wrapper">
               <div className="chat-header">
-                <h3>Ciao, {user.email}</h3>
+                <div className="chat-header-left">
+                  <div className="chat-header-avatar">
+                    <img src={user.avatarImage} alt={user.userID} />
+                  </div>
+                  <h3>Ciao, {user.username}</h3>
+                </div>
                 <div>
                   <button
                     onClick={handleGetUsers}
@@ -370,27 +397,43 @@ export default function Home() {
                       </div>
                       <div className="chat-messages-content">
                         {messagesList ? (
-                          messagesList.map((message, index) => (
-                            <div
-                              className={`container-message ${
-                                message.userID === user.userID
-                                  ? "own-container-message"
-                                  : ""
-                              }`}
-                            >
-                              <div
-                                key={index}
-                                className={`chat-message ${
-                                  message.userID === user.userID
-                                    ? "own-chat-message"
-                                    : ""
-                                }`}
-                              >
-                                <span>{message.userID}</span>
-                                <span>{message.messageText}</span>
-                              </div>
-                            </div>
-                          ))
+                          messagesList.map((message, index) => {
+                            const userInfo = usersInfo.find(
+                              (user) => user.userID === message.userID
+                            );
+                            if (userInfo) {
+                              return (
+                                <div
+                                  className={`container-message ${
+                                    message.userID === user.userID
+                                      ? "own-container-message"
+                                      : ""
+                                  }`}
+                                >
+                                  <div
+                                    key={index}
+                                    className={`chat-message ${
+                                      message.userID === user.userID
+                                        ? "own-chat-message"
+                                        : ""
+                                    }`}
+                                  >
+                                    <div className="message-sender-info">
+                                      <strong>{userInfo.username}</strong>
+                                      <div className="message-avatar">
+                                        <img
+                                          src={userInfo.avatarImage}
+                                          alt={message.userID}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <span>{message.messageText}</span>
+                                  </div>
+                                </div>
+                              );
+                            }
+                          })
                         ) : (
                           <span>nessun messaggio</span>
                         )}
