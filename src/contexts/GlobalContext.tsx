@@ -62,8 +62,8 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User>(new User("", "", "", "", []));
   const [isFirstLogin, setIsFirstLogin] = useState({
     status: false,
-    userID: "56727264-0031-703e-6f27-245812578eb1",
-    email: "ezuppardo@2innovation.it",
+    userID: "",
+    email: "",
   });
 
   useEffect(() => {

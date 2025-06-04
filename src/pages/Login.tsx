@@ -57,8 +57,8 @@ export default function Login({ setIsSignIned }: LoginProps) {
               resGetUser.body.data.lobbiesIDs
             )
           );
-          setIsLoggedIn(true);
         }
+        setIsLoggedIn(true);
       },
       onFailure: (err) => {
         alert(err.message || JSON.stringify(err));

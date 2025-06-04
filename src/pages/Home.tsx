@@ -318,7 +318,7 @@ export default function Home() {
         </div>
       </div>
       {isLoggedIn ? (
-        isFirstLogin ? (
+        isFirstLogin.status ? (
           <div className="chat-wrapper">
             <form onSubmit={handleFirstLogin}>
               <input
