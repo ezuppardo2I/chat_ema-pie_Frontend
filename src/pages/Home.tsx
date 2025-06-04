@@ -209,13 +209,20 @@ export default function Home() {
     e.preventDefault();
     if (!messageText.trim()) return;
 
-    await putMessage(activeLobby.lobbyID, messageText, user.userID);
+    const newMessage = await putMessage(
+      activeLobby.lobbyID,
+      messageText,
+      user.userID
+    );
     try {
       await pubsub.publish({
         topics: [activeLobby.lobbyID],
         message: {
-          messageText,
-          userID: user.userID,
+          messageID: newMessage.messageID,
+          lobbyID: newMessage.lobbyID,
+          userID: newMessage.userID,
+          messageText: newMessage.messageText,
+          timestamp: newMessage.timestamp,
         },
       });
 
@@ -397,7 +404,7 @@ export default function Home() {
                       </div>
                       <div className="chat-messages-content">
                         {messagesList ? (
-                          messagesList.reverse().map((message, index) => {
+                          [...messagesList].reverse().map((message, index) => {
                             const userInfo = usersInfo.find(
                               (user) => user.userID === message.userID
                             );

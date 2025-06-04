@@ -32,7 +32,7 @@ type GlobalContextType = {
     lobbyID: string,
     messageText: string,
     userID: string
-  ) => Promise<void>;
+  ) => Promise<any>;
   getPresignedUrl: (userID: string) => Promise<string>;
   putImage: (url: string, imageFile: File) => Promise<boolean>;
 };
@@ -189,7 +189,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
       }
     );
     const data = await res.json();
-    return data.data;
+    return data.data.content;
   }
 
   async function patchUserLobbies(userID: string, lobbyID: string[]) {
