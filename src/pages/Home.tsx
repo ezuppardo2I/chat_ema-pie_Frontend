@@ -29,6 +29,7 @@ export default function Home() {
     getMessages,
     putMessage,
     isFirstLogin,
+    putUser,
     setIsFirstLogin,
     getPresignedUrl,
     putImage,
@@ -67,6 +68,7 @@ export default function Home() {
             new User(
               res.body.data.userID,
               res.body.data.email,
+              res.body.data.username,
               res.body.data.avatarImage,
               res.body.data.lobbiesIDs
             )
@@ -132,19 +134,20 @@ export default function Home() {
     const formData = new FormData(e.currentTarget);
     const name = formData.get("name")!.toString();
 
-    const lobbyID = await putLobby(name, [...userIDs, user.userId]);
+    const lobbyID = await putLobby(name, [...userIDs, user.userID]);
 
     userIDs.forEach(async (id) => {
       const userID = id;
       await patchUserLobbies(userID, [lobbyID]);
     });
 
-    await patchUserLobbies(user.userId, [lobbyID]);
+    await patchUserLobbies(user.userID, [lobbyID]);
     const res = await getUser(userID);
     setUser(
       new User(
         res.body.data.userID,
         res.body.data.email,
+        res.body.data.username,
         res.body.data.avatarImage,
         res.body.data.lobbiesIDs
       )
@@ -165,12 +168,13 @@ export default function Home() {
     const allUsers = await getUsers();
 
     const filteredUsers = allUsers
-      .filter((userMap: any) => userMap.userID !== user.userId)
+      .filter((userMap: any) => userMap.userID !== user.userID)
       .map(
         (userMap: any) =>
           new User(
             userMap.userID,
             userMap.email,
+            userMap.username,
             userMap.avatarImage,
             userMap.lobbiesIDs
           )
@@ -183,13 +187,13 @@ export default function Home() {
     e.preventDefault();
     if (!messageText.trim()) return;
 
-    await putMessage(activeLobby.lobbyID, messageText, user.userId);
+    await putMessage(activeLobby.lobbyID, messageText, user.userID);
     try {
       await pubsub.publish({
         topics: [activeLobby.lobbyID],
         message: {
           messageText,
-          userID: user.userId,
+          userID: user.userID,
         },
       });
 
@@ -206,28 +210,34 @@ export default function Home() {
     const avatarImage = formData.get("avatarImage") as File;
 
     try {
-      // await putUser(
-      //   isFirstLogin.userID,
-      //   isFirstLogin.email,
-      //   username,
-      //   avatarImage
-      // );
-
       const url = await getPresignedUrl(isFirstLogin.userID);
       console.log("userID:", isFirstLogin.userID);
       console.log("Presigned URL:", url);
-      await putImage(url, avatarImage);
 
-      // setUser(
-      //   new User(
-      //     resGetUser.body.data.userID,
-      //     resGetUser.body.data.email,
-      //     resGetUser.body.data.avatarImage,
-      //     resGetUser.body.data.lobbiesIDs
-      //   )
-      // );
+      const urlAvatarImage = (await putImage(url, avatarImage))
+        ? "https://chat-avatar-bucket.s3.eu-west-2.amazonaws.com/" +
+          isFirstLogin.userID
+        : null;
+      await putUser(
+        isFirstLogin.userID,
+        isFirstLogin.email,
+        username,
+        urlAvatarImage!
+      );
 
-      // setIsFirstLogin({ status: false, userID: "", email: "" });
+      const resGetUser = await getUser(isFirstLogin.userID);
+
+      setUser(
+        new User(
+          resGetUser.body.data.userID,
+          resGetUser.body.data.email,
+          resGetUser.body.data.username,
+          resGetUser.body.data.avatarImage,
+          resGetUser.body.data.lobbiesIDs
+        )
+      );
+
+      setIsFirstLogin({ status: false, userID: "", email: "" });
     } catch (error) {
       console.error("Error creating user:", error);
       return;
@@ -275,7 +285,7 @@ export default function Home() {
                 >
                   <option value="default">Seleziona utenti</option>
                   {users.map((user) => (
-                    <option key={user.userId} value={user.userId}>
+                    <option key={user.userID} value={user.userID}>
                       {user.email}
                     </option>
                   ))}
@@ -363,7 +373,7 @@ export default function Home() {
                           messagesList.map((message, index) => (
                             <div
                               className={`container-message ${
-                                message.userID === user.userId
+                                message.userID === user.userID
                                   ? "own-container-message"
                                   : ""
                               }`}
@@ -371,7 +381,7 @@ export default function Home() {
                               <div
                                 key={index}
                                 className={`chat-message ${
-                                  message.userID === user.userId
+                                  message.userID === user.userID
                                     ? "own-chat-message"
                                     : ""
                                 }`}

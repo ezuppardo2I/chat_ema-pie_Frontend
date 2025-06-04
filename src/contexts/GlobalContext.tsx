@@ -34,7 +34,7 @@ type GlobalContextType = {
     userID: string
   ) => Promise<void>;
   getPresignedUrl: (userID: string) => Promise<string>;
-  putImage: (url: string, file: File) => Promise<void>;
+  putImage: (url: string, imageFile: File) => Promise<boolean>;
 };
 
 const GlobalContext = createContext<GlobalContextType>({
@@ -46,7 +46,7 @@ const GlobalContext = createContext<GlobalContextType>({
   getUser: async () => {},
   connectToIoT: async () => {},
   setUser: () => {},
-  user: new User("", "", "", []),
+  user: new User("", "", "", "", []),
   putLobby: async () => {},
   getUsers: async () => {},
   patchUserLobbies: async () => {},
@@ -54,12 +54,12 @@ const GlobalContext = createContext<GlobalContextType>({
   getMessages: async () => {},
   putMessage: async () => {},
   getPresignedUrl: async () => "",
-  putImage: async () => {},
+  putImage: async () => false,
 });
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<User>(new User("", "", "", []));
+  const [user, setUser] = useState<User>(new User("", "", "", "", []));
   const [isFirstLogin, setIsFirstLogin] = useState({
     status: false,
     userID: "56727264-0031-703e-6f27-245812578eb1",
@@ -218,18 +218,26 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     return data.data.content;
   }
 
-  async function putImage(url: string, file: File) {
+  async function putImage(url: string, imageFile: File) {
     try {
-      const res = await axios.put(url, file, {
+      const response = await fetch(url, {
+        method: "PUT",
         headers: {
-          "Content-Type": file.type,
+          "Content-Type": imageFile.type,
         },
+        body: imageFile,
       });
 
-      console.log("Image uploaded successfully", res.status);
+      if (response.ok) {
+        console.log("Immagine caricata con successo!");
+        return true;
+      } else {
+        console.error("Caricamento immagine fallito:", response.statusText);
+        return false;
+      }
     } catch (error) {
-      console.error("Error uploading image:", error);
-      throw error;
+      console.error("Errore durante il caricamento dell'immagine:", error);
+      return false;
     }
   }
 

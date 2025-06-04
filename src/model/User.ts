@@ -1,17 +1,20 @@
 export class User {
-  userId: string;
+  userID: string;
   email: string;
+  username: string;
   avatarImage: string;
   lobbiesIDs: string[];
 
   constructor(
-    userId: string,
+    userID: string,
     email: string,
+    username: string,
     avatarImage: string,
     lobbiesIDs: string[]
   ) {
-    this.userId = userId;
+    this.userID = userID;
     this.email = email;
+    this.username = username;
     this.avatarImage = avatarImage;
     this.lobbiesIDs = lobbiesIDs;
   }
@@ -23,8 +26,9 @@ export class User {
 
   toJSON() {
     return {
-      userId: this.userId,
+      userID: this.userID,
       email: this.email,
+      username: this.username,
       avatarImage: this.avatarImage,
       lobbiesIDs: this.lobbiesIDs,
     };

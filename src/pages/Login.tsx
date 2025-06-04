@@ -52,6 +52,7 @@ export default function Login({ setIsSignIned }: LoginProps) {
             new User(
               resGetUser.body.data.userID,
               resGetUser.body.data.email,
+              resGetUser.body.data.username,
               resGetUser.body.data.avatarImage,
               resGetUser.body.data.lobbiesIDs
             )
