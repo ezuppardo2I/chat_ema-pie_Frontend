@@ -131,7 +131,7 @@ export default function Home() {
 
     pubsub.subscribe({ topics: [lobbyID] }).subscribe({
       next: (data) => {
-        setMessagesList((prev) => [...prev, data]);
+        setMessagesList((prev) => [data, ...prev]);
       },
     });
 
@@ -397,7 +397,7 @@ export default function Home() {
                       </div>
                       <div className="chat-messages-content">
                         {messagesList ? (
-                          messagesList.map((message, index) => {
+                          messagesList.reverse().map((message, index) => {
                             const userInfo = usersInfo.find(
                               (user) => user.userID === message.userID
                             );
@@ -418,17 +418,18 @@ export default function Home() {
                                         : ""
                                     }`}
                                   >
-                                    <div className="message-sender-info">
-                                      <strong>{userInfo.username}</strong>
+                                    <div className="message-info">
                                       <div className="message-avatar">
                                         <img
                                           src={userInfo.avatarImage}
                                           alt={message.userID}
                                         />
                                       </div>
+                                      <div className="messageText-container">
+                                        <strong>{userInfo.username}</strong>
+                                        <span>{message.messageText}</span>
+                                      </div>
                                     </div>
-
-                                    <span>{message.messageText}</span>
                                   </div>
                                 </div>
                               );

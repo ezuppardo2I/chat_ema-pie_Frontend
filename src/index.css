@@ -189,8 +189,14 @@ body {
   height: 60px;
 }
 
-.message-sender-info {
+.message-info {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+}
+
+.messageText-container {
+  display: flex;
+  flex-direction: column;
+  overflow-wrap: anywhere;
 }
