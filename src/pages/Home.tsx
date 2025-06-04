@@ -28,6 +28,10 @@ export default function Home() {
     getLobby,
     getMessages,
     putMessage,
+    isFirstLogin,
+    setIsFirstLogin,
+    getPresignedUrl,
+    putImage,
   } = useGlobalContext();
   const [isSignIned, setIsSignIned] = useState(true);
   const userPool = new CognitoUserPool(poolData);
@@ -44,7 +48,6 @@ export default function Home() {
     })
   );
 
-  // Aggiungi stato per il messaggio
   const [messageText, setMessageText] = useState("");
 
   useEffect(() => {
@@ -176,10 +179,9 @@ export default function Home() {
     setUsers(filteredUsers);
   }
 
-  // Modifica il metodo per gestire il messaggio
   async function handlePutMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!messageText.trim()) return; // Evita l'invio di messaggi vuoti
+    if (!messageText.trim()) return;
 
     await putMessage(activeLobby.lobbyID, messageText, user.userId);
     try {
@@ -191,10 +193,44 @@ export default function Home() {
         },
       });
 
-      // Reset del campo input dopo l'invio del messaggio
       setMessageText("");
     } catch (error) {
       console.error("Error publishing message:", error);
+    }
+  }
+
+  async function handleFirstLogin(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const username = formData.get("username")!.toString();
+    const avatarImage = formData.get("avatarImage") as File;
+
+    try {
+      // await putUser(
+      //   isFirstLogin.userID,
+      //   isFirstLogin.email,
+      //   username,
+      //   avatarImage
+      // );
+
+      const url = await getPresignedUrl(isFirstLogin.userID);
+      console.log("userID:", isFirstLogin.userID);
+      console.log("Presigned URL:", url);
+      await putImage(url, avatarImage);
+
+      // setUser(
+      //   new User(
+      //     resGetUser.body.data.userID,
+      //     resGetUser.body.data.email,
+      //     resGetUser.body.data.avatarImage,
+      //     resGetUser.body.data.lobbiesIDs
+      //   )
+      // );
+
+      // setIsFirstLogin({ status: false, userID: "", email: "" });
+    } catch (error) {
+      console.error("Error creating user:", error);
+      return;
     }
   }
 
@@ -272,96 +308,113 @@ export default function Home() {
         </div>
       </div>
       {isLoggedIn ? (
-        <>
+        isFirstLogin ? (
           <div className="chat-wrapper">
-            <div className="chat-header">
-              <h3>Ciao, {user.email}</h3>
-              <div>
-                <button
-                  onClick={handleGetUsers}
-                  data-bs-toggle="modal"
-                  data-bs-target="#exampleModal"
-                  className="btn btn-primary"
-                >
-                  Aggiungi lobby
-                </button>
-              </div>
-            </div>
-            <div className="chat-content">
-              <div className="chat-lobbies">
-                <h4>Elenco lobby</h4>
-                {lobbies.map((lobby: any) => (
-                  <div
-                    key={lobby.lobbyID}
-                    className="chat-lobby"
-                    onClick={() => handleIotConnection(lobby)}
+            <form onSubmit={handleFirstLogin}>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="inserisci username"
+              />
+
+              <label htmlFor="avatarImage">Inserisci immagine avatar</label>
+              <input type="file" name="avatarImage" id="avatarImage" />
+              <button type="submit">Invia</button>
+            </form>
+          </div>
+        ) : (
+          <>
+            <div className="chat-wrapper">
+              <div className="chat-header">
+                <h3>Ciao, {user.email}</h3>
+                <div>
+                  <button
+                    onClick={handleGetUsers}
+                    data-bs-toggle="modal"
+                    data-bs-target="#exampleModal"
+                    className="btn btn-primary"
                   >
-                    <h5>{lobby.name}</h5>
-                  </div>
-                ))}
+                    Aggiungi lobby
+                  </button>
+                </div>
               </div>
-              <div className="chat-messages">
-                {activeLobby != null ? (
-                  <>
-                    <div className="chat-messages-header">
-                      <h3>{activeLobby.name}</h3>
+              <div className="chat-content">
+                <div className="chat-lobbies">
+                  <h4>Elenco lobby</h4>
+                  {lobbies.map((lobby: any) => (
+                    <div
+                      key={lobby.lobbyID}
+                      className="chat-lobby"
+                      onClick={() => handleIotConnection(lobby)}
+                    >
+                      <h5>{lobby.name}</h5>
                     </div>
-                    <div className="chat-messages-content">
-                      {messagesList ? (
-                        messagesList.map((message, index) => (
-                          <div
-                            className={`container-message ${
-                              message.userID === user.userId
-                                ? "own-container-message"
-                                : ""
-                            }`}
-                          >
+                  ))}
+                </div>
+                <div className="chat-messages">
+                  {activeLobby != null ? (
+                    <>
+                      <div className="chat-messages-header">
+                        <h3>{activeLobby.name}</h3>
+                      </div>
+                      <div className="chat-messages-content">
+                        {messagesList ? (
+                          messagesList.map((message, index) => (
                             <div
-                              key={index}
-                              className={`chat-message ${
+                              className={`container-message ${
                                 message.userID === user.userId
-                                  ? "own-chat-message"
+                                  ? "own-container-message"
                                   : ""
                               }`}
                             >
-                              <span>{message.userID}</span>
-                              <span>{message.messageText}</span>
+                              <div
+                                key={index}
+                                className={`chat-message ${
+                                  message.userID === user.userId
+                                    ? "own-chat-message"
+                                    : ""
+                                }`}
+                              >
+                                <span>{message.userID}</span>
+                                <span>{message.messageText}</span>
+                              </div>
                             </div>
+                          ))
+                        ) : (
+                          <span>nessun messaggio</span>
+                        )}
+                      </div>
+                      <div className="chat-messages-footer">
+                        <form
+                          className="input-message-container"
+                          onSubmit={handlePutMessage}
+                        >
+                          <input
+                            className="form-control"
+                            type="text"
+                            name="messageText"
+                            id="messageText"
+                            placeholder="inserisci il tuo messaggio"
+                            value={messageText}
+                            onChange={(e) => setMessageText(e.target.value)}
+                          />
+                          <div className="send-button-container">
+                            <button className="btn btn-primary" type="submit">
+                              Invia
+                            </button>
                           </div>
-                        ))
-                      ) : (
-                        <span>nessun messaggio</span>
-                      )}
-                    </div>
-                    <div className="chat-messages-footer">
-                      <form
-                        className="input-message-container"
-                        onSubmit={handlePutMessage}
-                      >
-                        <input
-                          className="form-control"
-                          type="text"
-                          name="messageText"
-                          id="messageText"
-                          placeholder="inserisci il tuo messaggio"
-                          value={messageText}
-                          onChange={(e) => setMessageText(e.target.value)}
-                        />
-                        <div className="send-button-container">
-                          <button className="btn btn-primary" type="submit">
-                            Invia
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  </>
-                ) : (
-                  <span>Seleziona una lobby</span>
-                )}
+                        </form>
+                      </div>
+                    </>
+                  ) : (
+                    <span>Seleziona una lobby</span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </>
+          </>
+        )
       ) : (
         <>
           {isSignIned ? (

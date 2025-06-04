@@ -6,11 +6,19 @@ import {
   type ReactNode,
 } from "react";
 import { User } from "../model/User";
+import axios from "axios";
 
 type GlobalContextType = {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   isLoggedIn: boolean;
-  putUser: (userID: string, email: string) => Promise<void>;
+  setIsFirstLogin: React.Dispatch<React.SetStateAction<any>>;
+  isFirstLogin: any;
+  putUser: (
+    userID: string,
+    email: string,
+    username: string,
+    avatarImage: string
+  ) => Promise<void>;
   getUser: (userID: string) => Promise<any>;
   connectToIoT: (cognitoIdentityID: string | undefined) => Promise<void>;
   user: User;
@@ -25,11 +33,15 @@ type GlobalContextType = {
     messageText: string,
     userID: string
   ) => Promise<void>;
+  getPresignedUrl: (userID: string) => Promise<string>;
+  putImage: (url: string, file: File) => Promise<void>;
 };
 
 const GlobalContext = createContext<GlobalContextType>({
   setIsLoggedIn: () => {},
   isLoggedIn: false,
+  setIsFirstLogin: () => {},
+  isFirstLogin: { status: false, userID: "", email: "" },
   putUser: async () => {},
   getUser: async () => {},
   connectToIoT: async () => {},
@@ -41,18 +53,30 @@ const GlobalContext = createContext<GlobalContextType>({
   getLobby: async () => {},
   getMessages: async () => {},
   putMessage: async () => {},
+  getPresignedUrl: async () => "",
+  putImage: async () => {},
 });
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User>(new User("", "", "", []));
+  const [isFirstLogin, setIsFirstLogin] = useState({
+    status: false,
+    userID: "56727264-0031-703e-6f27-245812578eb1",
+    email: "ezuppardo@2innovation.it",
+  });
 
   useEffect(() => {
     if (isLoggedIn) {
     }
   }, [isLoggedIn]);
 
-  async function putUser(userID: string, email: string) {
+  async function putUser(
+    userID: string,
+    email: string,
+    username: string,
+    avatarImage: string
+  ) {
     await fetch(
       "https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/user",
       {
@@ -62,8 +86,9 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
         },
         body: JSON.stringify({
           userID: userID,
-
           email: email,
+          username: username,
+          avatarImage: avatarImage,
         }),
       }
     );
@@ -185,9 +210,34 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     console.log("patch" + res.json());
   }
 
+  async function getPresignedUrl(userID: string) {
+    const data = await axios.get(
+      `https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/imageurl/${userID}`
+    );
+
+    return data.data.content;
+  }
+
+  async function putImage(url: string, file: File) {
+    try {
+      const res = await axios.put(url, file, {
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      console.log("Image uploaded successfully", res.status);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw error;
+    }
+  }
+
   return (
     <GlobalContext.Provider
       value={{
+        isFirstLogin,
+        setIsFirstLogin,
         putMessage,
         putUser,
         getUser,
@@ -201,6 +251,8 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
         getLobby,
         patchUserLobbies,
         getMessages,
+        getPresignedUrl,
+        putImage,
       }}
     >
       {children}

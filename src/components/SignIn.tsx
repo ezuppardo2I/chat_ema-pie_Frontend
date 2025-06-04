@@ -31,6 +31,7 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
         return;
       }
       alert("Utente confermato con successo!");
+      setIsSignIned((prev: boolean) => !prev);
     });
   }
 
@@ -108,8 +109,8 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
       </div>
 
       {confirmCodeSignIn ? (
-        <div>
-          <form onSubmit={handleVerification}>
+        <div className="verification-container">
+          <form className="verification-form" onSubmit={handleVerification}>
             <input
               className="form-control"
               type="number"
