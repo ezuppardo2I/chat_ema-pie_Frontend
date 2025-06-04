@@ -118,6 +118,7 @@ export default function Home() {
   }
 
   async function handleIotConnection(lobby: any) {
+    setMessagesList([]);
     const info = await fetchAuthSession();
     connectToIoT(info.identityId);
     setActiveLobby(lobby);
