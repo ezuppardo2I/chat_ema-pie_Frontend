@@ -93,6 +93,11 @@ body {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+.chat-lobby.active {
+  background-color: rgba(84, 22, 132, 0.403);
+  color: white;
+}
+
 .chat-messages-header {
   flex: 0 0 10%;
 }

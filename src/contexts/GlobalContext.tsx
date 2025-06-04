@@ -189,7 +189,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
       }
     );
     const data = await res.json();
-    return data.data.content;
+    return data.content;
   }
 
   async function patchUserLobbies(userID: string, lobbyID: string[]) {

@@ -214,6 +214,7 @@ export default function Home() {
       messageText,
       user.userID
     );
+
     try {
       await pubsub.publish({
         topics: [activeLobby.lobbyID],
@@ -389,7 +390,9 @@ export default function Home() {
                   {lobbies.map((lobby: any) => (
                     <div
                       key={lobby.lobbyID}
-                      className="chat-lobby"
+                      className={`chat-lobby ${
+                        activeLobby?.lobbyID === lobby.lobbyID ? "active" : ""
+                      }`}
                       onClick={() => handleIotConnection(lobby)}
                     >
                       <h5>{lobby.name}</h5>
