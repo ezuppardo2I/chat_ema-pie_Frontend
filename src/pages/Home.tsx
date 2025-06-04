@@ -48,6 +48,7 @@ export default function Home() {
       endpoint: "wss://a238raa4ef5q2d-ats.iot.eu-west-2.amazonaws.com/mqtt",
     })
   );
+  const [sub, setSub] = useState<any>(null);
   const [usersInfo, setUsersInfo] = useState<any[]>([]);
 
   const [messageText, setMessageText] = useState("");
@@ -118,6 +119,10 @@ export default function Home() {
   }
 
   async function handleIotConnection(lobby: any) {
+    if (sub !== null) {
+      sub.unsubscribe();
+      setSub(null);
+    }
     setMessagesList([]);
     const info = await fetchAuthSession();
     connectToIoT(info.identityId);
@@ -130,11 +135,13 @@ export default function Home() {
 
     setMessagesList(await getMessages(lobbyID));
 
-    pubsub.subscribe({ topics: [lobbyID] }).subscribe({
-      next: (data) => {
-        setMessagesList((prev) => [data, ...prev]);
-      },
-    });
+    setSub(
+      pubsub.subscribe({ topics: [lobbyID] }).subscribe({
+        next: (data) => {
+          setMessagesList((prev) => [data, ...prev]);
+        },
+      })
+    );
 
     let priorConnectionState: ConnectionState;
 
