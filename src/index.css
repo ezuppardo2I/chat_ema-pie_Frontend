@@ -204,3 +204,9 @@ body {
   flex-direction: column;
   overflow-wrap: anywhere;
 }
+
+.logout-button-container {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}

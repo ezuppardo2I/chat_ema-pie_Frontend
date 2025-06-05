@@ -251,6 +251,11 @@ export default function Home() {
 
   return (
     <>
+      <div className="logout-button-container">
+        <button onClick={handleLogout} className="btn btn-danger">
+          Logout
+        </button>
+      </div>
       <div
         className="modal fade"
         id="exampleModal"
