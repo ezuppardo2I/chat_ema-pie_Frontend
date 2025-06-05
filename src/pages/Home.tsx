@@ -62,7 +62,26 @@ export default function Home() {
           try {
             pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
               next: (message) => {
+                if (
+                  message.messageText &&
+                  message.messageText === "Nuovo messaggio in lobby" &&
+                  message.lobbyID !== activeLobby?.lobbyID
+                ) {
+                  setLobbies((prev: any[]) => {
+                    return prev.map((lobby) => {
+                      if (lobby.lobbyID === message.lobbyID) {
+                        return {
+                          ...lobby,
+                          messageText: true,
+                        };
+                      }
+                      return lobby;
+                    });
+                  });
+                }
+
                 setLobbiesUpdate((prev: any) => [...prev, message]);
+
                 console.log("Lobbies update received:", message);
               },
             });
@@ -256,6 +275,14 @@ export default function Home() {
         },
       });
 
+      await pubsub.publish({
+        topics: ["lobbies-update"],
+        message: {
+          lobbyID: activeLobby.lobbyID,
+          messageText: "Nuovo messaggio in lobby",
+        },
+      });
+
       setMessageText("");
     } catch (error) {
       console.error("Error publishing message:", error);
@@ -264,11 +291,6 @@ export default function Home() {
 
   return (
     <>
-      <div className="logout-button-container">
-        <button onClick={handleLogout} className="btn btn-danger">
-          Logout
-        </button>
-      </div>
       <div
         className="modal fade"
         id="exampleModal"
@@ -342,6 +364,11 @@ export default function Home() {
       </div>
       {isLoggedIn ? (
         <>
+          <div className="logout-button-container">
+            <button onClick={handleLogout} className="btn btn-danger">
+              Logout
+            </button>
+          </div>
           <div className="chat-wrapper">
             <div className="chat-header">
               <div className="chat-header-left">
@@ -369,7 +396,7 @@ export default function Home() {
                     key={lobby.lobbyID}
                     className={`chat-lobby ${
                       activeLobby?.lobbyID === lobby.lobbyID ? "active" : ""
-                    }`}
+                    } ${lobby.messageText ? "new-message" : ""}`}
                     onClick={() => handleIotConnection(lobby)}
                   >
                     <h5>{lobby.name}</h5>
