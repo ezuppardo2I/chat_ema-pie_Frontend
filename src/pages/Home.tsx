@@ -61,38 +61,49 @@ export default function Home() {
           const idToken = session.getIdToken().getJwtToken();
           const userID = JSON.parse(atob(idToken.split(".")[1])).sub;
           setIsLoggedIn(true);
-          // const info = await fetchAuthSession();
-          // connectToIoT(info.identityId);
-          // if (isLoggedIn === true) {
-          //   try {
-          //     setSubLobby(
-          //       pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
-          //         next: (message) => {
-          //           if (
-          //             message.messageText &&
-          //             message.messageText === "Nuovo messaggio in lobby" &&
-          //             message.lobbyID !== activeLobby?.lobbyID
-          //           ) {
-          //             setLobbies((prev: any[]) => {
-          //               return prev.map((lobby) => {
-          //                 if (lobby.lobbyID === message.lobbyID) {
-          //                   lobby.messageText = true;
-          //                 }
-          //                 return lobby;
-          //               });
-          //             });
-          //           }
 
-          //           setLobbiesUpdate((prev: any) => [...prev, message]);
+          if (isLoggedIn === true) {
+            const subscribeToLobbiesUpdate = async () => {
+              const info = await fetchAuthSession();
+              connectToIoT(info.identityId);
+              try {
+                setSubLobby(
+                  pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
+                    next: (message) => {
+                      if (
+                        message.messageText &&
+                        message.messageText === "Nuovo messaggio in lobby" &&
+                        message.lobbyID !== activeLobby?.lobbyID
+                      ) {
+                        setLobbies((prev: any[]) => {
+                          return prev.map((lobby) => {
+                            if (
+                              lobby.lobbyID === message.lobbyID &&
+                              message.userID !== user.userID
+                            ) {
+                              return {
+                                ...lobby,
+                                messageText: true,
+                              };
+                            }
+                            return lobby;
+                          });
+                        });
+                      }
 
-          //           console.log("Lobbies update received:", message);
-          //         },
-          //       })
-          //     );
-          //   } catch (error) {
-          //     console.error("Error subscribing to lobbies update:", error);
-          //   }
-          // }
+                      setLobbiesUpdate((prev: any) => [...prev, message]);
+
+                      console.log("Lobbies update received:", message);
+                    },
+                  })
+                );
+              } catch (error) {
+                console.error("Error subscribing to lobbies update:", error);
+              }
+            };
+
+            subscribeToLobbiesUpdate();
+          }
 
           const res = await getUser(userID);
           setUser(
@@ -108,46 +119,6 @@ export default function Home() {
       );
     }
   }, []);
-
-  useEffect(() => {
-    if (subLobby !== null) {
-      subLobby.unsubscribe();
-      setSubLobby(null);
-    }
-
-    const subscribeToLobbiesUpdate = async () => {
-      const info = await fetchAuthSession();
-      connectToIoT(info.identityId);
-      try {
-        pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
-          next: (message) => {
-            if (
-              message.messageText &&
-              message.messageText === "Nuovo messaggio in lobby" &&
-              message.lobbyID !== activeLobby?.lobbyID
-            ) {
-              setLobbies((prev: any[]) => {
-                return prev.map((lobby) => {
-                  if (lobby.lobbyID === message.lobbyID) {
-                    lobby.messageText = true;
-                  }
-                  return lobby;
-                });
-              });
-            }
-
-            setLobbiesUpdate((prev: any) => [...prev, message]);
-
-            console.log("Lobbies update received:", message);
-          },
-        });
-      } catch (error) {
-        console.error("Error subscribing to lobbies update:", error);
-      }
-    };
-
-    subscribeToLobbiesUpdate();
-  }, [activeLobby]);
 
   useEffect(() => {
     if (!user || !user.lobbiesIDs) return;
@@ -340,6 +311,7 @@ export default function Home() {
         message: {
           lobbyID: activeLobby.lobbyID,
           messageText: "Nuovo messaggio in lobby",
+          userID: user.userID,
         },
       });
 
