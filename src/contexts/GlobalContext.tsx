@@ -11,8 +11,6 @@ import axios from "axios";
 type GlobalContextType = {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   isLoggedIn: boolean;
-  setIsFirstLogin: React.Dispatch<React.SetStateAction<any>>;
-  isFirstLogin: any;
   putUser: (
     userID: string,
     email: string,
@@ -40,8 +38,6 @@ type GlobalContextType = {
 const GlobalContext = createContext<GlobalContextType>({
   setIsLoggedIn: () => {},
   isLoggedIn: false,
-  setIsFirstLogin: () => {},
-  isFirstLogin: { status: false, userID: "", email: "" },
   putUser: async () => {},
   getUser: async () => {},
   connectToIoT: async () => {},
@@ -60,11 +56,6 @@ const GlobalContext = createContext<GlobalContextType>({
 export function GlobalProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User>(new User("", "", "", "", []));
-  const [isFirstLogin, setIsFirstLogin] = useState({
-    status: false,
-    userID: "",
-    email: "",
-  });
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -244,8 +235,6 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   return (
     <GlobalContext.Provider
       value={{
-        isFirstLogin,
-        setIsFirstLogin,
         putMessage,
         putUser,
         getUser,

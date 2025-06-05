@@ -28,9 +28,7 @@ export default function Home() {
     getLobby,
     getMessages,
     putMessage,
-    isFirstLogin,
     putUser,
-    setIsFirstLogin,
     getPresignedUrl,
     putImage,
   } = useGlobalContext();
@@ -241,47 +239,6 @@ export default function Home() {
     }
   }
 
-  async function handleFirstLogin(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const username = formData.get("username")!.toString();
-    const avatarImage = formData.get("avatarImage") as File;
-
-    try {
-      const url = await getPresignedUrl(isFirstLogin.userID);
-      console.log("userID:", isFirstLogin.userID);
-      console.log("Presigned URL:", url);
-
-      const urlAvatarImage = (await putImage(url, avatarImage))
-        ? "https://chat-avatar-bucket.s3.eu-west-2.amazonaws.com/" +
-          isFirstLogin.userID
-        : null;
-      await putUser(
-        isFirstLogin.userID,
-        isFirstLogin.email,
-        username,
-        urlAvatarImage!
-      );
-
-      const resGetUser = await getUser(isFirstLogin.userID);
-
-      setUser(
-        new User(
-          resGetUser.body.data.userID,
-          resGetUser.body.data.email,
-          resGetUser.body.data.username,
-          resGetUser.body.data.avatarImage,
-          resGetUser.body.data.lobbiesIDs
-        )
-      );
-
-      setIsFirstLogin({ status: false, userID: "", email: "" });
-    } catch (error) {
-      console.error("Error creating user:", error);
-      return;
-    }
-  }
-
   return (
     <>
       <div
@@ -356,137 +313,120 @@ export default function Home() {
         </div>
       </div>
       {isLoggedIn ? (
-        isFirstLogin.status ? (
+        <>
           <div className="chat-wrapper">
-            <form onSubmit={handleFirstLogin}>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                placeholder="inserisci username"
-              />
-
-              <label htmlFor="avatarImage">Inserisci immagine avatar</label>
-              <input type="file" name="avatarImage" id="avatarImage" />
-              <button type="submit">Invia</button>
-            </form>
-          </div>
-        ) : (
-          <>
-            <div className="chat-wrapper">
-              <div className="chat-header">
-                <div className="chat-header-left">
-                  <div className="chat-header-avatar">
-                    <img src={user.avatarImage} alt={user.userID} />
-                  </div>
-                  <h3>Ciao, {user.username}</h3>
+            <div className="chat-header">
+              <div className="chat-header-left">
+                <div className="chat-header-avatar">
+                  <img src={user.avatarImage} alt={user.userID} />
                 </div>
-                <div>
-                  <button
-                    onClick={handleGetUsers}
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                    className="btn btn-primary"
-                  >
-                    Aggiungi lobby
-                  </button>
-                </div>
+                <h3>Ciao, {user.username}</h3>
               </div>
-              <div className="chat-content">
-                <div className="chat-lobbies">
-                  <h4>Elenco lobby</h4>
-                  {lobbies.map((lobby: any) => (
-                    <div
-                      key={lobby.lobbyID}
-                      className={`chat-lobby ${
-                        activeLobby?.lobbyID === lobby.lobbyID ? "active" : ""
-                      }`}
-                      onClick={() => handleIotConnection(lobby)}
-                    >
-                      <h5>{lobby.name}</h5>
+              <div>
+                <button
+                  onClick={handleGetUsers}
+                  data-bs-toggle="modal"
+                  data-bs-target="#exampleModal"
+                  className="btn btn-primary"
+                >
+                  Aggiungi lobby
+                </button>
+              </div>
+            </div>
+            <div className="chat-content">
+              <div className="chat-lobbies">
+                <h4>Elenco lobby</h4>
+                {lobbies.map((lobby: any) => (
+                  <div
+                    key={lobby.lobbyID}
+                    className={`chat-lobby ${
+                      activeLobby?.lobbyID === lobby.lobbyID ? "active" : ""
+                    }`}
+                    onClick={() => handleIotConnection(lobby)}
+                  >
+                    <h5>{lobby.name}</h5>
+                  </div>
+                ))}
+              </div>
+              <div className="chat-messages">
+                {activeLobby != null ? (
+                  <>
+                    <div className="chat-messages-header">
+                      <h3>{activeLobby.name}</h3>
                     </div>
-                  ))}
-                </div>
-                <div className="chat-messages">
-                  {activeLobby != null ? (
-                    <>
-                      <div className="chat-messages-header">
-                        <h3>{activeLobby.name}</h3>
-                      </div>
-                      <div className="chat-messages-content">
-                        {messagesList ? (
-                          [...messagesList].reverse().map((message, index) => {
-                            const userInfo = usersInfo.find(
-                              (user) => user.userID === message.userID
-                            );
-                            if (userInfo) {
-                              return (
+                    <div className="chat-messages-content">
+                      {messagesList ? (
+                        [...messagesList].reverse().map((message, index) => {
+                          const userInfo = usersInfo.find(
+                            (user) => user.userID === message.userID
+                          );
+                          if (userInfo) {
+                            return (
+                              <div
+                                className={`container-message ${
+                                  message.userID === user.userID
+                                    ? "own-container-message"
+                                    : ""
+                                }`}
+                              >
                                 <div
-                                  className={`container-message ${
+                                  key={index}
+                                  className={`chat-message ${
                                     message.userID === user.userID
-                                      ? "own-container-message"
+                                      ? "own-chat-message"
                                       : ""
                                   }`}
                                 >
-                                  <div
-                                    key={index}
-                                    className={`chat-message ${
-                                      message.userID === user.userID
-                                        ? "own-chat-message"
-                                        : ""
-                                    }`}
-                                  >
-                                    <div className="message-info">
-                                      <div className="message-avatar">
-                                        <img
-                                          src={userInfo.avatarImage}
-                                          alt={message.userID}
-                                        />
-                                      </div>
-                                      <div className="messageText-container">
-                                        <strong>{userInfo.username}</strong>
-                                        <span>{message.messageText}</span>
-                                      </div>
+                                  <div className="message-info">
+                                    <div className="message-avatar">
+                                      <img
+                                        src={userInfo.avatarImage}
+                                        alt={message.userID}
+                                      />
+                                    </div>
+                                    <div className="messageText-container">
+                                      <strong>{userInfo.username}</strong>
+                                      <span>{message.messageText}</span>
                                     </div>
                                   </div>
                                 </div>
-                              );
-                            }
-                          })
-                        ) : (
-                          <span>nessun messaggio</span>
-                        )}
-                      </div>
-                      <div className="chat-messages-footer">
-                        <form
-                          className="input-message-container"
-                          onSubmit={handlePutMessage}
-                        >
-                          <input
-                            className="form-control"
-                            type="text"
-                            name="messageText"
-                            id="messageText"
-                            placeholder="inserisci il tuo messaggio"
-                            value={messageText}
-                            onChange={(e) => setMessageText(e.target.value)}
-                          />
-                          <div className="send-button-container">
-                            <button className="btn btn-primary" type="submit">
-                              Invia
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    </>
-                  ) : (
-                    <span>Seleziona una lobby</span>
-                  )}
-                </div>
+                              </div>
+                            );
+                          }
+                        })
+                      ) : (
+                        <span>nessun messaggio</span>
+                      )}
+                    </div>
+                    <div className="chat-messages-footer">
+                      <form
+                        className="input-message-container"
+                        onSubmit={handlePutMessage}
+                      >
+                        <input
+                          className="form-control"
+                          type="text"
+                          name="messageText"
+                          id="messageText"
+                          placeholder="inserisci il tuo messaggio"
+                          value={messageText}
+                          onChange={(e) => setMessageText(e.target.value)}
+                        />
+                        <div className="send-button-container">
+                          <button className="btn btn-primary" type="submit">
+                            Invia
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </>
+                ) : (
+                  <span>Seleziona una lobby</span>
+                )}
               </div>
             </div>
-          </>
-        )
+          </div>
+        </>
       ) : (
         <>
           {isSignIned ? (
