@@ -58,39 +58,39 @@ export default function Login() {
         );
 
         setIsLoggedIn(true);
-        // const info = await fetchAuthSession();
-        // connectToIoT(info.identityId);
-        // try {
-        //   setSubLobby(
-        //     pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
-        //       next: (message) => {
-        //         if (
-        //           message.messageText &&
-        //           message.messageText === "Nuovo messaggio in lobby" &&
-        //           message.lobbyID !== activeLobby?.lobbyID
-        //         ) {
-        //           setLobbies((prev: any[]) => {
-        //             return prev.map((lobby) => {
-        //               if (lobby.lobbyID === message.lobbyID) {
-        //                 return {
-        //                   ...lobby,
-        //                   messageText: true,
-        //                 };
-        //               }
-        //               return lobby;
-        //             });
-        //           });
-        //         }
+        const info = await fetchAuthSession();
+        connectToIoT(info.identityId);
+        try {
+          setSubLobby(
+            pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
+              next: (message) => {
+                if (
+                  message.messageText &&
+                  message.messageText === "Nuovo messaggio in lobby" &&
+                  message.lobbyID !== activeLobby?.lobbyID
+                ) {
+                  setLobbies((prev: any[]) => {
+                    return prev.map((lobby) => {
+                      if (lobby.lobbyID === message.lobbyID) {
+                        return {
+                          ...lobby,
+                          messageText: true,
+                        };
+                      }
+                      return lobby;
+                    });
+                  });
+                }
 
-        //         setLobbiesUpdate((prev: any) => [...prev, message]);
+                setLobbiesUpdate((prev: any) => [...prev, message]);
 
-        //         console.log("Lobbies update received:", message);
-        //       },
-        //     })
-        //   );
-        // } catch (error) {
-        //   console.error("Error subscribing to lobbies update:", error);
-        // }
+                console.log("Lobbies update received:", message);
+              },
+            })
+          );
+        } catch (error) {
+          console.error("Error subscribing to lobbies update:", error);
+        }
       },
       onFailure: (err) => {
         if (err.code === "UserNotConfirmedException") {

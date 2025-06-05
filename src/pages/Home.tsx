@@ -61,38 +61,38 @@ export default function Home() {
           const idToken = session.getIdToken().getJwtToken();
           const userID = JSON.parse(atob(idToken.split(".")[1])).sub;
           setIsLoggedIn(true);
-          const info = await fetchAuthSession();
-          connectToIoT(info.identityId);
-          if (isLoggedIn === true) {
-            try {
-              setSubLobby(
-                pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
-                  next: (message) => {
-                    if (
-                      message.messageText &&
-                      message.messageText === "Nuovo messaggio in lobby" &&
-                      message.lobbyID !== activeLobby?.lobbyID
-                    ) {
-                      setLobbies((prev: any[]) => {
-                        return prev.map((lobby) => {
-                          if (lobby.lobbyID === message.lobbyID) {
-                            lobby.messageText = true;
-                          }
-                          return lobby;
-                        });
-                      });
-                    }
+          // const info = await fetchAuthSession();
+          // connectToIoT(info.identityId);
+          // if (isLoggedIn === true) {
+          //   try {
+          //     setSubLobby(
+          //       pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
+          //         next: (message) => {
+          //           if (
+          //             message.messageText &&
+          //             message.messageText === "Nuovo messaggio in lobby" &&
+          //             message.lobbyID !== activeLobby?.lobbyID
+          //           ) {
+          //             setLobbies((prev: any[]) => {
+          //               return prev.map((lobby) => {
+          //                 if (lobby.lobbyID === message.lobbyID) {
+          //                   lobby.messageText = true;
+          //                 }
+          //                 return lobby;
+          //               });
+          //             });
+          //           }
 
-                    setLobbiesUpdate((prev: any) => [...prev, message]);
+          //           setLobbiesUpdate((prev: any) => [...prev, message]);
 
-                    console.log("Lobbies update received:", message);
-                  },
-                })
-              );
-            } catch (error) {
-              console.error("Error subscribing to lobbies update:", error);
-            }
-          }
+          //           console.log("Lobbies update received:", message);
+          //         },
+          //       })
+          //     );
+          //   } catch (error) {
+          //     console.error("Error subscribing to lobbies update:", error);
+          //   }
+          // }
 
           const res = await getUser(userID);
           setUser(
