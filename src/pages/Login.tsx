@@ -6,11 +6,18 @@ import {
 import { poolData } from "../config";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { User } from "../model/User";
+import { fetchAuthSession } from "@aws-amplify/auth";
 
 export default function Login() {
   const userPool = new CognitoUserPool(poolData);
-  const { getUser, setIsLoggedIn, setUser, pubsub, setLobbiesUpdate } =
-    useGlobalContext();
+  const {
+    getUser,
+    setIsLoggedIn,
+    setUser,
+    pubsub,
+    setLobbiesUpdate,
+    connectToIoT,
+  } = useGlobalContext();
 
   function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -47,6 +54,8 @@ export default function Login() {
         );
 
         setIsLoggedIn(true);
+        const info = await fetchAuthSession();
+        connectToIoT(info.identityId);
         try {
           pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
             next: (message) => {
