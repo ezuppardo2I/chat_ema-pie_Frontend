@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import SignIn from "../components/SignIn";
 import Login from "./Login";
 import {
@@ -29,6 +29,7 @@ export default function Home() {
     putMessage,
     isSignedIn,
     pubsub,
+    setLobbiesUpdate,
   } = useGlobalContext();
   const userPool = new CognitoUserPool(poolData);
   const [users, setUsers] = useState<User[]>([]);
@@ -45,6 +46,7 @@ export default function Home() {
 
   useEffect(() => {
     const currentUser = userPool.getCurrentUser();
+
     if (currentUser) {
       currentUser.getSession(
         async (err: Error, session: CognitoUserSession | null) => {
@@ -55,6 +57,18 @@ export default function Home() {
           const idToken = session.getIdToken().getJwtToken();
           const userID = JSON.parse(atob(idToken.split(".")[1])).sub;
           setIsLoggedIn(true);
+          const info = await fetchAuthSession();
+          connectToIoT(info.identityId);
+          try {
+            pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
+              next: (message) => {
+                setLobbiesUpdate((prev: any) => [...prev, message]);
+              },
+            });
+          } catch (error) {
+            console.error("Error subscribing to lobbies update:", error);
+          }
+
           const res = await getUser(userID);
           setUser(
             new User(
@@ -118,8 +132,6 @@ export default function Home() {
       setSub(null);
     }
     setMessagesList([]);
-    const info = await fetchAuthSession();
-    connectToIoT(info.identityId);
     setActiveLobby(lobby);
     const lobbyID = lobby.lobbyID;
     const userIDsActiveLobby = lobby.userIDs;
