@@ -73,7 +73,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   }
 
   async function connectToIoT(cognitoIdentityID: string | undefined) {
-    const res = await fetch(
+    await fetch(
       "https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/iot",
       {
         method: "POST",
