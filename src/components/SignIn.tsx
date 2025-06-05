@@ -3,6 +3,7 @@ import {
   CognitoUserAttribute,
 } from "amazon-cognito-identity-js";
 import { poolData } from "../config";
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 interface LoginProps {
   setIsSignIned: React.Dispatch<React.SetStateAction<boolean>>;
@@ -10,7 +11,7 @@ interface LoginProps {
 
 export default function SignIn({ setIsSignIned }: LoginProps) {
   const userPool = new CognitoUserPool(poolData);
-  // const { getPresignedUrl, putImage, getUser } = useGlobalContext();
+  const { setIsLoggedIn } = useGlobalContext();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,6 +39,7 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
           alert(err.message || JSON.stringify(err));
           return;
         }
+        setIsLoggedIn(true);
       }
     );
 
