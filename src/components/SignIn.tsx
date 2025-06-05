@@ -43,7 +43,6 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
     const email = formData.get("email")!.toString();
     const password = formData.get("password")!.toString();
     const username = formData.get("username")!.toString();
-    const avatarImage = formData.get("avatarImage") as File;
 
     setEmail(email);
     const attributeEmail = new CognitoUserAttribute({
@@ -68,6 +67,7 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
         setConfirmCodeSignIn(true);
       }
     );
+
     // if (avatarImage != null) {
     //   try {
     //     const url = await getPresignedUrl();
@@ -134,13 +134,6 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
               required
             />
 
-            <label htmlFor="avatarImage">Inserisci immagine avatar</label>
-            <input
-              className="form-control"
-              type="file"
-              name="avatarImage"
-              id="avatarImage"
-            />
             <button className="btn btn-primary" type="submit">
               Registrati
             </button>
