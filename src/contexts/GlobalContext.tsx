@@ -93,7 +93,8 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     const lastMessage = lobbiesUpdate[lobbiesUpdate.length - 1];
     if (
       lastMessage?.messageText &&
-      lastMessage?.messageText === "Nuovo messaggio in lobby"
+      lastMessage?.messageText === "Nuovo messaggio in lobby" &&
+      lastMessage?.userID !== user.userID
     ) {
       return;
     } else {
