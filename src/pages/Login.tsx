@@ -46,7 +46,11 @@ export default function Login() {
         );
 
         setIsLoggedIn(true);
-        pubsub.subscribe({ topics: ["lobbies-update"] });
+        pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
+          next: (message) => {
+            // setLobbiesUpdate((prev: any) => [...prev, message.data]);
+          },
+        });
       },
       onFailure: (err) => {
         if (err.code === "UserNotConfirmedException") {
