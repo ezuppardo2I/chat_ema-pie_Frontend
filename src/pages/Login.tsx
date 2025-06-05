@@ -9,7 +9,8 @@ import { User } from "../model/User";
 
 export default function Login() {
   const userPool = new CognitoUserPool(poolData);
-  const { getUser, setIsLoggedIn, setUser, pubsub } = useGlobalContext();
+  const { getUser, setIsLoggedIn, setUser, pubsub, setLobbiesUpdate } =
+    useGlobalContext();
 
   function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,7 +49,8 @@ export default function Login() {
         setIsLoggedIn(true);
         pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
           next: (message) => {
-            // setLobbiesUpdate((prev: any) => [...prev, message.data]);
+            setLobbiesUpdate((prev: any) => [...prev, message.data]);
+            console.log("Lobbies update received:", message.data);
           },
         });
       },

@@ -32,6 +32,8 @@ type GlobalContextType = {
   setIsSignedIn: React.Dispatch<React.SetStateAction<boolean>>;
   setPubsub: React.Dispatch<React.SetStateAction<PubSub>>;
   pubsub: PubSub;
+  lobbiesUpdate: any[];
+  setLobbiesUpdate: React.Dispatch<React.SetStateAction<any[]>>;
 };
 
 const GlobalContext = createContext<GlobalContextType>({
@@ -56,6 +58,8 @@ const GlobalContext = createContext<GlobalContextType>({
     region: "eu-west-2",
     endpoint: "wss://a238raa4ef5q2d-ats.iot.eu-west-2.amazonaws.com/mqtt",
   }),
+  lobbiesUpdate: [],
+  setLobbiesUpdate: () => {},
 });
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
@@ -68,6 +72,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
       endpoint: "wss://a238raa4ef5q2d-ats.iot.eu-west-2.amazonaws.com/mqtt",
     })
   );
+  const [lobbiesUpdate, setLobbiesUpdate] = useState<any[]>([]);
 
   async function getUser(userID: string) {
     const res = await fetch(
@@ -216,6 +221,8 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   return (
     <GlobalContext.Provider
       value={{
+        lobbiesUpdate,
+        setLobbiesUpdate,
         putMessage,
         getUser,
         setIsLoggedIn,
