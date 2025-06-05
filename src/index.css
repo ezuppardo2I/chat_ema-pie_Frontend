@@ -214,3 +214,13 @@ body {
 .new-message {
   background-color: red;
 }
+
+.status-new-message {
+  position: absolute;
+  top: 50%;
+  right: 10%;
+  width: 10px;
+  height: 10px;
+  background-color: transparent;
+  border-radius: 50%;
+}

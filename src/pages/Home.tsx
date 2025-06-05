@@ -172,6 +172,15 @@ export default function Home() {
       })
     );
 
+    setLobbies((prev: any[]) => {
+      return prev.map((lobbyItem) => {
+        if (lobbyItem.lobbyID === lobbyID) {
+          lobbyItem.messageText = false;
+        }
+        return lobbyItem;
+      });
+    });
+
     let priorConnectionState: ConnectionState;
 
     Hub.listen("pubsub", (data: any) => {
@@ -399,10 +408,15 @@ export default function Home() {
                     key={lobby.lobbyID}
                     className={`chat-lobby ${
                       activeLobby?.lobbyID === lobby.lobbyID ? "active" : ""
-                    } ${lobby.messageText ? "new-message" : ""}`}
+                    }`}
                     onClick={() => handleIotConnection(lobby)}
                   >
                     <h5>{lobby.name}</h5>
+                    <div
+                      className={`status-new-message ${
+                        lobby.messageText ? "new-message" : ""
+                      }`}
+                    ></div>
                   </div>
                 ))}
               </div>
