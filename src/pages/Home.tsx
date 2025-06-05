@@ -63,7 +63,7 @@ export default function Home() {
           setIsLoggedIn(true);
           const info = await fetchAuthSession();
           connectToIoT(info.identityId);
-          if (isLoggedIn) {
+          if (isLoggedIn === true) {
             try {
               setSubLobby(
                 pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
