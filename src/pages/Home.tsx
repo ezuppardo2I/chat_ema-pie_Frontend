@@ -77,10 +77,14 @@ export default function Home() {
 
   useEffect(() => {
     if (!user || !user.lobbiesIDs) return;
-    user.lobbiesIDs.map(async (lobbyID) => {
-      const res = await getLobby(lobbyID);
-      setLobbies((prev: any) => [...prev, res]);
-    });
+
+    const fetchLobbies = async () => {
+      const promises = user.lobbiesIDs.map((lobbyID) => getLobby(lobbyID));
+      const results = await Promise.all(promises);
+      setLobbies(results);
+    };
+
+    fetchLobbies();
   }, [user]);
 
   function handleCloseModal() {
