@@ -34,6 +34,10 @@ type GlobalContextType = {
   pubsub: PubSub;
   lobbiesUpdate: any[];
   setLobbiesUpdate: React.Dispatch<React.SetStateAction<any[]>>;
+  activeLobby: any | null;
+  setActiveLobby: React.Dispatch<React.SetStateAction<any | null>>;
+  lobbies: any[];
+  setLobbies: React.Dispatch<React.SetStateAction<any[]>>;
 };
 
 const GlobalContext = createContext<GlobalContextType>({
@@ -60,6 +64,10 @@ const GlobalContext = createContext<GlobalContextType>({
   }),
   lobbiesUpdate: [],
   setLobbiesUpdate: () => {},
+  activeLobby: null,
+  setActiveLobby: () => {},
+  lobbies: [],
+  setLobbies: () => {},
 });
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
@@ -73,6 +81,8 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     })
   );
   const [lobbiesUpdate, setLobbiesUpdate] = useState<any[]>([]);
+  const [activeLobby, setActiveLobby] = useState<any | null>(null);
+  const [lobbies, setLobbies] = useState<any>([]);
 
   useEffect(() => {
     const lastMessage = lobbiesUpdate[lobbiesUpdate.length - 1];
@@ -246,6 +256,8 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   return (
     <GlobalContext.Provider
       value={{
+        lobbies,
+        setLobbies,
         lobbiesUpdate,
         setLobbiesUpdate,
         putMessage,
@@ -266,6 +278,8 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
         isSignedIn,
         setPubsub,
         pubsub,
+        activeLobby,
+        setActiveLobby,
       }}
     >
       {children}

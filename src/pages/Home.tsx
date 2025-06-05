@@ -30,13 +30,15 @@ export default function Home() {
     isSignedIn,
     pubsub,
     setLobbiesUpdate,
+    activeLobby,
+    setActiveLobby,
+    lobbies,
+    setLobbies,
   } = useGlobalContext();
   const userPool = new CognitoUserPool(poolData);
   const [users, setUsers] = useState<User[]>([]);
   const [userIDs, setUserIDs] = useState<string[]>([]);
   const [userID, setUserID] = useState<string>("default");
-  const [lobbies, setLobbies] = useState<any>([]);
-  const [activeLobby, setActiveLobby] = useState<any | null>(null);
   const [messagesList, setMessagesList] = useState<any[]>([]);
 
   const [sub, setSub] = useState<any>(null);
