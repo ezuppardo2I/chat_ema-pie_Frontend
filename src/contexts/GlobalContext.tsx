@@ -77,8 +77,8 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const lastMessage = lobbiesUpdate[lobbiesUpdate.length - 1];
     if (
-      lastMessage.messageText &&
-      lastMessage.messageText === "Nuovo messaggio in lobby"
+      lastMessage?.messageText &&
+      lastMessage?.messageText === "Nuovo messaggio in lobby"
     ) {
       return;
     } else {
