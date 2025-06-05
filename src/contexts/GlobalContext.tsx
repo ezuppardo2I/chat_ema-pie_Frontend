@@ -76,7 +76,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const lastMessage = lobbiesUpdate[lobbiesUpdate.length - 1];
-    lastMessage.userIDs.forEach(async (userID: any) => {
+    lastMessage?.userIDs.forEach(async (userID: any) => {
       if (userID === user.userID) {
         const newUser = await getUser(userID);
         setUser(
