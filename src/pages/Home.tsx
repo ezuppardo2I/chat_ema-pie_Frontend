@@ -10,7 +10,6 @@ import { poolData } from "../config";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { ConnectionState } from "aws-amplify/api";
-import { PubSub } from "@aws-amplify/pubsub";
 import { Hub } from "aws-amplify/utils";
 import { User } from "../model/User";
 
@@ -28,8 +27,9 @@ export default function Home() {
     getLobby,
     getMessages,
     putMessage,
+    isSignedIn,
+    pubsub,
   } = useGlobalContext();
-  const [isSignIned, setIsSignIned] = useState(true);
   const userPool = new CognitoUserPool(poolData);
   const [users, setUsers] = useState<User[]>([]);
   const [userIDs, setUserIDs] = useState<string[]>([]);
@@ -37,12 +37,7 @@ export default function Home() {
   const [lobbies, setLobbies] = useState<any>([]);
   const [activeLobby, setActiveLobby] = useState<any | null>(null);
   const [messagesList, setMessagesList] = useState<any[]>([]);
-  const [pubsub, setPubsub] = useState(
-    new PubSub({
-      region: "eu-west-2",
-      endpoint: "wss://a238raa4ef5q2d-ats.iot.eu-west-2.amazonaws.com/mqtt",
-    })
-  );
+
   const [sub, setSub] = useState<any>(null);
   const [usersInfo, setUsersInfo] = useState<any[]>([]);
 
@@ -165,6 +160,20 @@ export default function Home() {
       const userID = id;
       await patchUserLobbies(userID, [lobbyID]);
     });
+
+    try {
+      await pubsub.publish({
+        topics: ["lobbies-update"],
+        message: {
+          lobbyID: lobbyID,
+          userIDs: [...userIDs, user.userID],
+        },
+      });
+
+      setMessageText("");
+    } catch (error) {
+      console.error("Error publishing message:", error);
+    }
 
     await patchUserLobbies(user.userID, [lobbyID]);
     const res = await getUser(user.userID);
@@ -425,13 +434,7 @@ export default function Home() {
           </div>
         </>
       ) : (
-        <>
-          {isSignIned ? (
-            <Login setIsSignIned={setIsSignIned} />
-          ) : (
-            <SignIn setIsSignIned={setIsSignIned} />
-          )}
-        </>
+        <>{isSignedIn ? <Login /> : <SignIn />}</>
       )}
     </>
   );
