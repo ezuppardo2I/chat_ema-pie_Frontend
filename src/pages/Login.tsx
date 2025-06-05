@@ -18,6 +18,7 @@ export default function Login() {
     activeLobby,
     setLobbies,
     setLobbiesUpdate,
+    connectToIoT,
   } = useGlobalContext();
 
   function handleLogin(e: React.FormEvent<HTMLFormElement>) {
@@ -137,7 +138,4 @@ export default function Login() {
       </div>
     </>
   );
-}
-function connectToIoT(identityId: string | undefined) {
-  throw new Error("Function not implemented.");
 }
