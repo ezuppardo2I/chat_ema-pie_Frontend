@@ -69,12 +69,6 @@ export default function Login() {
                   message.messageText === "Nuovo messaggio in lobby" &&
                   message.lobbyID !== activeLobby?.lobbyID
                 ) {
-                  console.log(
-                    "message.lobbyID !== activeLobby?.lobbyID: ",
-                    message.lobbyID,
-                    activeLobby?.lobbyID
-                  );
-                  console.log("New message in lobby:", message.lobbyID);
                   setLobbies((prev: any[]) => {
                     return prev.map((lobby) => {
                       if (lobby.lobbyID === message.lobbyID) {

@@ -63,39 +63,35 @@ export default function Home() {
           setIsLoggedIn(true);
           const info = await fetchAuthSession();
           connectToIoT(info.identityId);
-          try {
-            setSubLobby(
-              pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
-                next: (message) => {
-                  if (
-                    message.messageText &&
-                    message.messageText === "Nuovo messaggio in lobby" &&
-                    message.lobbyID !== activeLobby?.lobbyID
-                  ) {
-                    console.log(
-                      "message.lobbyID !== activeLobby?.lobbyID: ",
-                      message.lobbyID,
-                      activeLobby.lobbyID
-                    );
-                    console.log("New message in lobby:", message.lobbyID);
-                    setLobbies((prev: any[]) => {
-                      return prev.map((lobby) => {
-                        if (lobby.lobbyID === message.lobbyID) {
-                          lobby.messageText = true;
-                        }
-                        return lobby;
+          if (isLoggedIn) {
+            try {
+              setSubLobby(
+                pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
+                  next: (message) => {
+                    if (
+                      message.messageText &&
+                      message.messageText === "Nuovo messaggio in lobby" &&
+                      message.lobbyID !== activeLobby?.lobbyID
+                    ) {
+                      setLobbies((prev: any[]) => {
+                        return prev.map((lobby) => {
+                          if (lobby.lobbyID === message.lobbyID) {
+                            lobby.messageText = true;
+                          }
+                          return lobby;
+                        });
                       });
-                    });
-                  }
+                    }
 
-                  setLobbiesUpdate((prev: any) => [...prev, message]);
+                    setLobbiesUpdate((prev: any) => [...prev, message]);
 
-                  console.log("Lobbies update received:", message);
-                },
-              })
-            );
-          } catch (error) {
-            console.error("Error subscribing to lobbies update:", error);
+                    console.log("Lobbies update received:", message);
+                  },
+                })
+              );
+            } catch (error) {
+              console.error("Error subscribing to lobbies update:", error);
+            }
           }
 
           const res = await getUser(userID);
@@ -130,12 +126,6 @@ export default function Home() {
               message.messageText === "Nuovo messaggio in lobby" &&
               message.lobbyID !== activeLobby?.lobbyID
             ) {
-              console.log(
-                "message.lobbyID !== activeLobby?.lobbyID: ",
-                message.lobbyID,
-                activeLobby.lobbyID
-              );
-              console.log("New message in lobby:", message.lobbyID);
               setLobbies((prev: any[]) => {
                 return prev.map((lobby) => {
                   if (lobby.lobbyID === message.lobbyID) {
