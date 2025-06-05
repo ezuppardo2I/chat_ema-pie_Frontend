@@ -19,6 +19,8 @@ export default function Login() {
     setLobbies,
     setLobbiesUpdate,
     connectToIoT,
+    subLobby,
+    setSubLobby,
   } = useGlobalContext();
 
   function handleLogin(e: React.FormEvent<HTMLFormElement>) {
@@ -59,32 +61,39 @@ export default function Login() {
         const info = await fetchAuthSession();
         connectToIoT(info.identityId);
         try {
-          pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
-            next: (message) => {
-              if (
-                message.messageText &&
-                message.messageText === "Nuovo messaggio in lobby" &&
-                message.lobbyID !== activeLobby?.lobbyID
-              ) {
-                console.log("New message in lobby:", message.lobbyID);
-                setLobbies((prev: any[]) => {
-                  return prev.map((lobby) => {
-                    if (lobby.lobbyID === message.lobbyID) {
-                      return {
-                        ...lobby,
-                        messageText: true,
-                      };
-                    }
-                    return lobby;
+          setSubLobby(
+            pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
+              next: (message) => {
+                if (
+                  message.messageText &&
+                  message.messageText === "Nuovo messaggio in lobby" &&
+                  message.lobbyID !== activeLobby?.lobbyID
+                ) {
+                  console.log(
+                    "message.lobbyID !== activeLobby?.lobbyID: ",
+                    message.lobbyID,
+                    activeLobby?.lobbyID
+                  );
+                  console.log("New message in lobby:", message.lobbyID);
+                  setLobbies((prev: any[]) => {
+                    return prev.map((lobby) => {
+                      if (lobby.lobbyID === message.lobbyID) {
+                        return {
+                          ...lobby,
+                          messageText: true,
+                        };
+                      }
+                      return lobby;
+                    });
                   });
-                });
-              }
+                }
 
-              setLobbiesUpdate((prev: any) => [...prev, message]);
+                setLobbiesUpdate((prev: any) => [...prev, message]);
 
-              console.log("Lobbies update received:", message);
-            },
-          });
+                console.log("Lobbies update received:", message);
+              },
+            })
+          );
         } catch (error) {
           console.error("Error subscribing to lobbies update:", error);
         }
