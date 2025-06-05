@@ -366,6 +366,12 @@ export default function Home() {
                                     : ""
                                 }`}
                               >
+                                <div className="message-avatar">
+                                  <img
+                                    src={userInfo.avatarImage}
+                                    alt={message.userID}
+                                  />
+                                </div>
                                 <div
                                   key={index}
                                   className={`chat-message ${
@@ -375,12 +381,6 @@ export default function Home() {
                                   }`}
                                 >
                                   <div className="message-info">
-                                    <div className="message-avatar">
-                                      <img
-                                        src={userInfo.avatarImage}
-                                        alt={message.userID}
-                                      />
-                                    </div>
                                     <div className="messageText-container">
                                       <strong>{userInfo.username}</strong>
                                       <span>{message.messageText}</span>
