@@ -20,6 +20,7 @@ export default function Login() {
     setLobbiesUpdate,
     connectToIoT,
     subLobby,
+    user,
     setSubLobby,
   } = useGlobalContext();
 
@@ -71,7 +72,10 @@ export default function Login() {
                 ) {
                   setLobbies((prev: any[]) => {
                     return prev.map((lobby) => {
-                      if (lobby.lobbyID === message.lobbyID) {
+                      if (
+                        lobby.lobbyID === message.lobbyID &&
+                        message.userID !== user.userID
+                      ) {
                         return {
                           ...lobby,
                           messageText: true,
