@@ -89,6 +89,7 @@ body {
   border: 1px solid #ccc;
   width: 90%;
   border-radius: 20px;
+  position: relative;
 }
 
 .chat-lobby:hover {
@@ -211,10 +212,6 @@ body {
   right: 1rem;
 }
 
-.new-message {
-  background-color: red;
-}
-
 .status-new-message {
   position: absolute;
   top: 50%;
@@ -223,4 +220,8 @@ body {
   height: 10px;
   background-color: transparent;
   border-radius: 50%;
+}
+
+.new-message {
+  background-color: red;
 }

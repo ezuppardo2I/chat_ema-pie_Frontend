@@ -69,6 +69,12 @@ export default function Home() {
                   message.messageText === "Nuovo messaggio in lobby" &&
                   message.lobbyID !== activeLobby?.lobbyID
                 ) {
+                  console.log(
+                    "message.lobbyID !== activeLobby?.lobbyID: ",
+
+                    message.lobbyID,
+                    activeLobby?.lobbyID
+                  );
                   console.log("New message in lobby:", message.lobbyID);
                   setLobbies((prev: any[]) => {
                     return prev.map((lobby) => {
