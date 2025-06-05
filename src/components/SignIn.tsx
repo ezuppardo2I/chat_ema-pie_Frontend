@@ -1,10 +1,8 @@
 import {
   CognitoUserPool,
   CognitoUserAttribute,
-  CognitoUser,
 } from "amazon-cognito-identity-js";
 import { poolData } from "../config";
-import { useState } from "react";
 
 interface LoginProps {
   setIsSignIned: React.Dispatch<React.SetStateAction<boolean>>;
@@ -12,28 +10,7 @@ interface LoginProps {
 
 export default function SignIn({ setIsSignIned }: LoginProps) {
   const userPool = new CognitoUserPool(poolData);
-  const [confirmCodeSignIn, setConfirmCodeSignIn] = useState(false);
-  const [email, setEmail] = useState("");
   // const { getPresignedUrl, putImage, getUser } = useGlobalContext();
-
-  function handleVerification(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const code = formData.get("code")!.toString();
-    const cognitoUser = new CognitoUser({
-      Username: email,
-      Pool: userPool,
-    });
-
-    cognitoUser.confirmRegistration(code, false, (err) => {
-      if (err) {
-        alert(err.message || JSON.stringify(err));
-        return;
-      }
-      alert("Utente confermato con successo!");
-      setIsSignIned((prev: boolean) => !prev);
-    });
-  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,7 +19,6 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
     const password = formData.get("password")!.toString();
     const username = formData.get("username")!.toString();
 
-    setEmail(email);
     const attributeEmail = new CognitoUserAttribute({
       Name: "email",
       Value: email,
@@ -62,7 +38,6 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
           alert(err.message || JSON.stringify(err));
           return;
         }
-        setConfirmCodeSignIn(true);
       }
     );
 
@@ -149,26 +124,6 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
           </a>
         </div>
       </div>
-
-      {confirmCodeSignIn ? (
-        <div className="verification-container">
-          <form className="verification-form" onSubmit={handleVerification}>
-            <input
-              className="form-control"
-              type="number"
-              name="code"
-              id="code"
-              placeholder="verification code"
-            />
-
-            <button className="btn btn-primary" type="submit">
-              Invia
-            </button>
-          </form>
-        </div>
-      ) : (
-        ""
-      )}
     </>
   );
 }

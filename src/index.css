@@ -158,14 +158,6 @@ body {
   height: 100% !important;
 }
 
-.verification-container {
-  display: flex;
-}
-
-.verification-form {
-  display: flex;
-}
-
 .chat-header-left {
   display: flex;
   align-items: center;

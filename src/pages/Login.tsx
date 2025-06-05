@@ -52,7 +52,11 @@ export default function Login({ setIsSignIned }: LoginProps) {
         setIsLoggedIn(true);
       },
       onFailure: (err) => {
-        alert(err.message || JSON.stringify(err));
+        if (err.code === "UserNotConfirmedException") {
+          alert("L'utente non ha ancora confermato l'email.");
+        } else {
+          alert(err.message || JSON.stringify(err));
+        }
       },
     });
   }
