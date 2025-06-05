@@ -7,6 +7,7 @@ import {
 } from "react";
 import { User } from "../model/User";
 import axios from "axios";
+import { PubSub } from "@aws-amplify/pubsub";
 
 type GlobalContextType = {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -27,11 +28,17 @@ type GlobalContextType = {
   ) => Promise<any>;
   getPresignedUrl: (userID: string) => Promise<string>;
   putImage: (url: string, imageFile: File) => Promise<boolean>;
+  isSignedIn: boolean;
+  setIsSignedIn: React.Dispatch<React.SetStateAction<boolean>>;
+  setPubsub: React.Dispatch<React.SetStateAction<PubSub>>;
+  pubsub: PubSub;
 };
 
 const GlobalContext = createContext<GlobalContextType>({
   setIsLoggedIn: () => {},
   isLoggedIn: false,
+  isSignedIn: false,
+  setIsSignedIn: () => {},
   getUser: async () => {},
   connectToIoT: async () => {},
   setUser: () => {},
@@ -44,16 +51,23 @@ const GlobalContext = createContext<GlobalContextType>({
   putMessage: async () => {},
   getPresignedUrl: async () => "",
   putImage: async () => false,
+  setPubsub: () => {},
+  pubsub: new PubSub({
+    region: "eu-west-2",
+    endpoint: "wss://a238raa4ef5q2d-ats.iot.eu-west-2.amazonaws.com/mqtt",
+  }),
 });
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const [user, setUser] = useState<User>(new User("", "", "", "", []));
-
-  useEffect(() => {
-    if (isLoggedIn) {
-    }
-  }, [isLoggedIn]);
+  const [pubsub, setPubsub] = useState(
+    new PubSub({
+      region: "eu-west-2",
+      endpoint: "wss://a238raa4ef5q2d-ats.iot.eu-west-2.amazonaws.com/mqtt",
+    })
+  );
 
   async function getUser(userID: string) {
     const res = await fetch(
@@ -153,8 +167,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   }
 
   async function patchUserLobbies(userID: string, lobbyID: string[]) {
-    console.log("patchUserLobbies", userID, lobbyID);
-    const res = await fetch(
+    await fetch(
       "https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/user/lobbies",
       {
         method: "PATCH",
@@ -167,7 +180,6 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
         }),
       }
     );
-    console.log("patch" + res.json());
   }
 
   async function getPresignedUrl(userID: string) {
@@ -218,6 +230,10 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
         getMessages,
         getPresignedUrl,
         putImage,
+        setIsSignedIn,
+        isSignedIn,
+        setPubsub,
+        pubsub,
       }}
     >
       {children}

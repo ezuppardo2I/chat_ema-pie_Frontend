@@ -52,6 +52,7 @@ body {
   display: flex;
   justify-content: space-between;
   width: 95%;
+  border-bottom: 1px solid #ccc;
 }
 
 .chat-content {
@@ -69,6 +70,8 @@ body {
   gap: 0.5rem;
   height: 100%;
   overflow-y: auto;
+  border-right: 1px solid #ccc;
+  padding: 1rem;
 }
 
 .chat-messages {
@@ -99,6 +102,10 @@ body {
 
 .chat-messages-header {
   flex: 0 0 10%;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  padding-left: 1rem;
 }
 
 .chat-messages-content {

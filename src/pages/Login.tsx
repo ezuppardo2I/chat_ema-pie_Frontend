@@ -7,13 +7,9 @@ import { poolData } from "../config";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { User } from "../model/User";
 
-interface LoginProps {
-  setIsSignIned: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-export default function Login({ setIsSignIned }: LoginProps) {
+export default function Login() {
   const userPool = new CognitoUserPool(poolData);
-  const { getUser, setIsLoggedIn, setUser } = useGlobalContext();
+  const { getUser, setIsLoggedIn, setUser, pubsub } = useGlobalContext();
 
   function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,6 +46,7 @@ export default function Login({ setIsSignIned }: LoginProps) {
         );
 
         setIsLoggedIn(true);
+        pubsub.subscribe({ topics: ["lobbies-update"] });
       },
       onFailure: (err) => {
         if (err.code === "UserNotConfirmedException") {
@@ -91,7 +88,7 @@ export default function Login({ setIsSignIned }: LoginProps) {
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              setIsSignIned((prev: boolean) => !prev);
+              setIsLoggedIn(true);
             }}
           >
             Altrimenti registrati

@@ -5,13 +5,9 @@ import {
 import { poolData } from "../config";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
-interface LoginProps {
-  setIsSignIned: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-export default function SignIn({ setIsSignIned }: LoginProps) {
+export default function SignIn() {
   const userPool = new CognitoUserPool(poolData);
-  const { setIsLoggedIn } = useGlobalContext();
+  const { setIsSignedIn } = useGlobalContext();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,7 +35,7 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
           alert(err.message || JSON.stringify(err));
           return;
         }
-        setIsLoggedIn(true);
+        setIsSignedIn(true);
       }
     );
 
@@ -119,7 +115,7 @@ export default function SignIn({ setIsSignIned }: LoginProps) {
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              setIsSignIned((prev: boolean) => !prev);
+              setIsSignedIn(true);
             }}
           >
             Altrimenti accedi
