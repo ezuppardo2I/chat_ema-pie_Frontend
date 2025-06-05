@@ -73,10 +73,7 @@ export default function Home() {
                   setLobbies((prev: any[]) => {
                     return prev.map((lobby) => {
                       if (lobby.lobbyID === message.lobbyID) {
-                        return {
-                          ...lobby,
-                          messageText: true,
-                        };
+                        lobby.messageText = true;
                       }
                       return lobby;
                     });
@@ -113,7 +110,13 @@ export default function Home() {
     const fetchLobbies = async () => {
       const promises = user.lobbiesIDs.map((lobbyID) => getLobby(lobbyID));
       const results = await Promise.all(promises);
-      setLobbies(results);
+
+      const enrichedResults = results.map((lobby) => ({
+        ...lobby,
+        messageText: false,
+      }));
+
+      setLobbies(enrichedResults);
     };
 
     fetchLobbies();
