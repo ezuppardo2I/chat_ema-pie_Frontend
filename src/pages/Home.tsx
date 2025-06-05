@@ -1,4 +1,4 @@
-import { act, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import SignIn from "../components/SignIn";
 import Login from "./Login";
 import {
@@ -9,7 +9,7 @@ import {
 import { poolData } from "../config";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { fetchAuthSession } from "aws-amplify/auth";
-import { ConnectionState, get } from "aws-amplify/api";
+import { ConnectionState } from "aws-amplify/api";
 import { PubSub } from "@aws-amplify/pubsub";
 import { Hub } from "aws-amplify/utils";
 import { User } from "../model/User";
@@ -28,9 +28,6 @@ export default function Home() {
     getLobby,
     getMessages,
     putMessage,
-    putUser,
-    getPresignedUrl,
-    putImage,
   } = useGlobalContext();
   const [isSignIned, setIsSignIned] = useState(true);
   const userPool = new CognitoUserPool(poolData);

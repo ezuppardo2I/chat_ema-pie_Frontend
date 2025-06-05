@@ -2,10 +2,8 @@ import {
   CognitoUserPool,
   CognitoUserAttribute,
   CognitoUser,
-  type ISignUpResult,
 } from "amazon-cognito-identity-js";
 import { poolData } from "../config";
-import { useGlobalContext } from "../contexts/GlobalContext";
 import { useState } from "react";
 
 interface LoginProps {

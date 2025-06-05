@@ -11,12 +11,6 @@ import axios from "axios";
 type GlobalContextType = {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   isLoggedIn: boolean;
-  putUser: (
-    userID: string,
-    email: string,
-    username: string,
-    avatarImage: string
-  ) => Promise<void>;
   getUser: (userID: string) => Promise<any>;
   connectToIoT: (cognitoIdentityID: string | undefined) => Promise<void>;
   user: User;
@@ -38,7 +32,6 @@ type GlobalContextType = {
 const GlobalContext = createContext<GlobalContextType>({
   setIsLoggedIn: () => {},
   isLoggedIn: false,
-  putUser: async () => {},
   getUser: async () => {},
   connectToIoT: async () => {},
   setUser: () => {},
@@ -61,29 +54,6 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     if (isLoggedIn) {
     }
   }, [isLoggedIn]);
-
-  async function putUser(
-    userID: string,
-    email: string,
-    username: string,
-    avatarImage: string
-  ) {
-    await fetch(
-      "https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/user",
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userID: userID,
-          email: email,
-          username: username,
-          avatarImage: avatarImage,
-        }),
-      }
-    );
-  }
 
   async function getUser(userID: string) {
     const res = await fetch(
@@ -111,7 +81,6 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ cognitoIdentityID: cognitoIdentityID }),
       }
     );
-    const data = await res.json();
   }
 
   async function putLobby(name: string, userIDs: string[]) {
@@ -236,7 +205,6 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     <GlobalContext.Provider
       value={{
         putMessage,
-        putUser,
         getUser,
         setIsLoggedIn,
         isLoggedIn,

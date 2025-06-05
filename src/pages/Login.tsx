@@ -13,8 +13,7 @@ interface LoginProps {
 
 export default function Login({ setIsSignIned }: LoginProps) {
   const userPool = new CognitoUserPool(poolData);
-  const { putUser, getUser, setIsLoggedIn, setUser, setIsFirstLogin } =
-    useGlobalContext();
+  const { getUser, setIsLoggedIn, setUser } = useGlobalContext();
 
   function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -35,29 +34,21 @@ export default function Login({ setIsSignIned }: LoginProps) {
     cognitoUser.authenticateUser(authDetails, {
       onSuccess: async (session) => {
         const idToken = session.getIdToken().getJwtToken();
-        console.log("Login effettuato con successo", idToken);
         const payload = JSON.parse(atob(idToken.split(".")[1]));
         const userID = payload.sub;
 
         const resGetUser = await getUser(userID);
 
-        if (resGetUser.status === 404) {
-          setIsFirstLogin({
-            status: true,
-            userID: userID,
-            email: email,
-          });
-        } else {
-          setUser(
-            new User(
-              resGetUser.body.data.userID,
-              resGetUser.body.data.email,
-              resGetUser.body.data.username,
-              resGetUser.body.data.avatarImage,
-              resGetUser.body.data.lobbiesIDs
-            )
-          );
-        }
+        setUser(
+          new User(
+            resGetUser.body.data.userID,
+            resGetUser.body.data.email,
+            resGetUser.body.data.username,
+            resGetUser.body.data.avatarImage,
+            resGetUser.body.data.lobbiesIDs
+          )
+        );
+
         setIsLoggedIn(true);
       },
       onFailure: (err) => {
