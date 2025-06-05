@@ -91,28 +91,29 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const lastMessage = lobbiesUpdate[lobbiesUpdate.length - 1];
+    if (!lastMessage || lastMessage.userID === user.userID) return;
+
     if (
-      lastMessage?.messageText &&
-      lastMessage?.messageText === "Nuovo messaggio in lobby" &&
-      lastMessage?.userID !== user.userID
+      lastMessage.messageText &&
+      lastMessage.messageText === "Nuovo messaggio in lobby"
     ) {
       return;
-    } else {
-      lastMessage?.userIDs.forEach(async (userID: any) => {
-        if (userID === user.userID) {
-          const newUser = await getUser(userID);
-          setUser(
-            new User(
-              newUser.body.data.userID,
-              newUser.body.data.email,
-              newUser.body.data.username,
-              newUser.body.data.avatarImage,
-              newUser.body.data.lobbiesIDs
-            )
-          );
-        }
-      });
     }
+
+    lastMessage.userIDs.forEach(async (userID: any) => {
+      if (userID === user.userID) {
+        const newUser = await getUser(userID);
+        setUser(
+          new User(
+            newUser.body.data.userID,
+            newUser.body.data.email,
+            newUser.body.data.username,
+            newUser.body.data.avatarImage,
+            newUser.body.data.lobbiesIDs
+          )
+        );
+      }
+    });
   }, [lobbiesUpdate]);
 
   async function getUser(userID: string) {
