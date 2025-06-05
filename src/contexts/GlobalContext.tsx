@@ -74,6 +74,24 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   );
   const [lobbiesUpdate, setLobbiesUpdate] = useState<any[]>([]);
 
+  useEffect(() => {
+    const lastMessage = lobbiesUpdate[lobbiesUpdate.length - 1];
+    lastMessage.userIDs.forEach(async (userID: any) => {
+      if (userID === user.userID) {
+        const newUser = await getUser(userID);
+        setUser(
+          new User(
+            newUser.body.data.userID,
+            newUser.body.data.email,
+            newUser.body.data.username,
+            newUser.body.data.avatarImage,
+            newUser.body.data.lobbiesIDs
+          )
+        );
+      }
+    });
+  }, [lobbiesUpdate]);
+
   async function getUser(userID: string) {
     const res = await fetch(
       `https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/user/${userID}`,
