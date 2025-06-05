@@ -170,6 +170,14 @@ export default function Home() {
     setActiveLobby(null);
     setUsers([]);
     setUsersInfo([]);
+    if (sub !== null) {
+      sub.unsubscribe();
+      setSub(null);
+    }
+    if (subLobby !== null) {
+      subLobby.unsubscribe();
+      setSubLobby(null);
+    }
   }
 
   async function handleIotConnection(lobby: any) {
