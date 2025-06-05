@@ -75,18 +75,6 @@ export default function Home() {
     }
   }, []);
 
-  useEffect(() => {
-    if (!user || !user.lobbiesIDs) return;
-
-    const fetchLobbies = async () => {
-      const promises = user.lobbiesIDs.map((lobbyID) => getLobby(lobbyID));
-      const results = await Promise.all(promises);
-      setLobbies(results);
-    };
-
-    fetchLobbies();
-  }, [user]);
-
   function handleCloseModal() {
     setUserIDs([]);
     setUserID("default");
@@ -181,6 +169,13 @@ export default function Home() {
         res.body.data.lobbiesIDs
       )
     );
+
+    const array: any[] = [];
+    user.lobbiesIDs.map(async (lobbyID) => {
+      const res = await getLobby(lobbyID);
+      array.push(res);
+    });
+    setLobbies(array);
 
     setUserIDs([]);
     setUserID("default");
