@@ -63,6 +63,7 @@ export default function Home() {
             pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
               next: (message) => {
                 setLobbiesUpdate((prev: any) => [...prev, message]);
+                console.log("Lobbies update received:", message);
               },
             });
           } catch (error) {
