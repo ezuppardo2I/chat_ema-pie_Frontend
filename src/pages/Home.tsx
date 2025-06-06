@@ -46,7 +46,9 @@ export default function Home() {
   const [sub, setSub] = useState<any>(null);
   const [usersInfo, setUsersInfo] = useState<any[]>([]);
 
-  const [messageText, setMessageText] = useState("");
+  const [inputMessageText, setInputMessageText] = useState("");
+
+  console.log("lobbies", lobbies);
 
   useEffect(() => {
     const currentUser = userPool.getCurrentUser();
@@ -65,40 +67,6 @@ export default function Home() {
           const subscribeToLobbiesUpdate = async () => {
             const info = await fetchAuthSession();
             connectToIoT(info.identityId);
-            try {
-              setSubLobby(
-                pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
-                  next: (message) => {
-                    if (
-                      message.messageText &&
-                      message.messageText === "Nuovo messaggio in lobby" &&
-                      message.lobbyID !== activeLobby?.lobbyID
-                    ) {
-                      setLobbies((prev: any[]) => {
-                        return prev.map((lobby) => {
-                          if (
-                            lobby.lobbyID === message.lobbyID &&
-                            message.userID !== user.userID
-                          ) {
-                            return {
-                              ...lobby,
-                              messageText: true,
-                            };
-                          }
-                          return lobby;
-                        });
-                      });
-                    }
-
-                    setLobbiesUpdate((prev: any) => [...prev, message]);
-
-                    console.log("Lobbies update received:", message);
-                  },
-                })
-              );
-            } catch (error) {
-              console.error("Error subscribing to lobbies update:", error);
-            }
           };
 
           subscribeToLobbiesUpdate();
@@ -117,6 +85,47 @@ export default function Home() {
       );
     }
   }, []);
+
+  useEffect(() => {
+    if (subLobby != null) {
+      subLobby.unsubscribe();
+    }
+
+    try {
+      setSubLobby(
+        pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
+          next: (message) => {
+            if (
+              message.messageText &&
+              message.messageText === "Nuovo messaggio in lobby" &&
+              message.lobbyID !== activeLobby?.lobbyID
+            ) {
+              setLobbies((prev: any[]) => {
+                return prev.map((lobby) => {
+                  if (
+                    lobby.lobbyID === message.lobbyID &&
+                    message.userID != user.userID
+                  ) {
+                    return {
+                      ...lobby,
+                      messageText: true,
+                    };
+                  }
+                  return lobby;
+                });
+              });
+            }
+
+            setLobbiesUpdate((prev: any) => [...prev, message]);
+
+            console.log("Lobbies update received:", message);
+          },
+        })
+      );
+    } catch (error) {
+      console.error("Error subscribing to lobbies update:", error);
+    }
+  }, [activeLobby]);
 
   useEffect(() => {
     if (!user || !user.lobbiesIDs) return;
@@ -190,6 +199,8 @@ export default function Home() {
     const lobbyID = lobby.lobbyID;
     const userIDsActiveLobby = lobby.userIDs;
 
+    console.log("lobby", lobby);
+
     setUsersInfo([]);
     await loadUsersInfo(userIDsActiveLobby);
 
@@ -249,7 +260,7 @@ export default function Home() {
         },
       });
 
-      setMessageText("");
+      setInputMessageText("");
     } catch (error) {
       console.error("Error publishing message:", error);
     }
@@ -298,11 +309,11 @@ export default function Home() {
 
   async function handlePutMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!messageText.trim()) return;
+    if (!inputMessageText.trim()) return;
 
     const newMessage = await putMessage(
       activeLobby.lobbyID,
-      messageText,
+      inputMessageText,
       user.userID
     );
 
@@ -327,7 +338,7 @@ export default function Home() {
         },
       });
 
-      setMessageText("");
+      setInputMessageText("");
     } catch (error) {
       console.error("Error publishing message:", error);
     }
@@ -513,8 +524,8 @@ export default function Home() {
                           name="messageText"
                           id="messageText"
                           placeholder="inserisci il tuo messaggio"
-                          value={messageText}
-                          onChange={(e) => setMessageText(e.target.value)}
+                          value={inputMessageText}
+                          onChange={(e) => setInputMessageText(e.target.value)}
                         />
                         <div className="send-button-container">
                           <button className="btn btn-primary" type="submit">

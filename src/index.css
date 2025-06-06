@@ -215,9 +215,10 @@ body {
 .status-new-message {
   position: absolute;
   top: 50%;
-  right: 10%;
-  width: 10px;
-  height: 10px;
+  transform: translateY(-50%);
+  right: 5%;
+  width: 15px;
+  height: 15px;
   background-color: transparent;
   border-radius: 50%;
 }
