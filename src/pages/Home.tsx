@@ -48,8 +48,6 @@ export default function Home() {
 
   const [inputMessageText, setInputMessageText] = useState("");
 
-  console.log("lobbies", lobbies);
-
   useEffect(() => {
     const currentUser = userPool.getCurrentUser();
 
@@ -81,6 +79,7 @@ export default function Home() {
               res.body.data.lobbiesIDs
             )
           );
+          setActiveLobby({ lobbyID: "" });
         }
       );
     }
