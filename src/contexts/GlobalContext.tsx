@@ -42,6 +42,8 @@ type GlobalContextType = {
   setSubLobby: React.Dispatch<React.SetStateAction<any | null>>;
   openSubscribeLobbiesUpdate: () => void;
   closeSubscribeLobbiesUpdate: () => void;
+  isProfile: boolean;
+  setIsProfile: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const GlobalContext = createContext<GlobalContextType>({
@@ -76,6 +78,8 @@ const GlobalContext = createContext<GlobalContextType>({
   setSubLobby: () => {},
   openSubscribeLobbiesUpdate: async () => {},
   closeSubscribeLobbiesUpdate: () => {},
+  isProfile: false,
+  setIsProfile: () => {},
 });
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
@@ -92,6 +96,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   const [activeLobby, setActiveLobby] = useState<any | null>(null);
   const [lobbies, setLobbies] = useState<any>([]);
   const [subLobby, setSubLobby] = useState<any>(null);
+  const [isProfile, setIsProfile] = useState<boolean>(false);
 
   useEffect(() => {
     const lastMessage = lobbiesUpdate[lobbiesUpdate.length - 1];
@@ -310,6 +315,8 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   return (
     <GlobalContext.Provider
       value={{
+        isProfile,
+        setIsProfile,
         closeSubscribeLobbiesUpdate,
         lobbies,
         setLobbies,

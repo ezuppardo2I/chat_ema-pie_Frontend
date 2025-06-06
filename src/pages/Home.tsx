@@ -34,6 +34,8 @@ export default function Home() {
     lobbies,
     setLobbies,
     closeSubscribeLobbiesUpdate,
+    isProfile,
+    setIsProfile,
   } = useGlobalContext();
   const userPool = new CognitoUserPool(poolData);
   const [users, setUsers] = useState<User[]>([]);
@@ -257,6 +259,10 @@ export default function Home() {
     setUsers(filteredUsers);
   }
 
+  async function handleOpenProfile() {
+    setIsProfile((prev: boolean) => !prev);
+  }
+
   async function handlePutMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!inputMessageText.trim()) return;
@@ -375,10 +381,17 @@ export default function Home() {
             </button>
           </div>
           <div className="chat-wrapper">
+            <div
+              className={`profile-settings ${isProfile ? "open" : ""}`}
+            ></div>
             <div className="chat-header">
               <div className="chat-header-left">
-                <div className="chat-header-avatar">
-                  <img src={user.avatarImage} alt={user.userID} />
+                <div className={`chat-header-avatar`}>
+                  <img
+                    onClick={handleOpenProfile}
+                    src={user.avatarImage}
+                    alt={user.userID}
+                  />
                 </div>
                 <h3>Ciao, {user.username}</h3>
               </div>
