@@ -117,8 +117,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   }, [lobbiesUpdate]);
 
   useEffect(() => {
-    if (activeLobby.userID != null && isLoggedIn == true)
-      openSubscribeLobbiesUpdate();
+    if (activeLobby != null && isLoggedIn == true) openSubscribeLobbiesUpdate();
   }, [activeLobby]);
 
   async function getUser(userID: string) {
