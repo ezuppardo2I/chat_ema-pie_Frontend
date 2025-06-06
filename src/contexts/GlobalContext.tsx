@@ -298,7 +298,6 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
           },
         })
       );
-      console.log("✅SUBSCRIBE");
     } catch (error) {
       console.error("Error subscribing to lobbies update:", error);
     }
@@ -306,7 +305,6 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
 
   function closeSubscribeLobbiesUpdate(): void {
     if (subLobby != null) subLobby.unsubscribe();
-    console.log("❌UNSUBSCRIBE");
   }
 
   return (
