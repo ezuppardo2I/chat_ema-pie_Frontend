@@ -70,12 +70,11 @@ export default function Home() {
           }
           const idToken = session.getIdToken().getJwtToken();
           const userID = JSON.parse(atob(idToken.split(".")[1])).sub;
-          setIsLoggedIn(true);
 
           const info = await fetchAuthSession();
-          connectToIoT(info.identityId);
-          setActiveLobby({ lobbyID: "" });
-          console.log(activeLobby);
+          await connectToIoT(info.identityId);
+
+          setIsLoggedIn(true);
 
           const res = await getUser(userID);
           setUser(
@@ -91,6 +90,10 @@ export default function Home() {
       );
     }
   }, []);
+
+  useEffect(() => {
+    if (isLoggedIn == true) setActiveLobby({ userID: "" });
+  }, [isLoggedIn]);
 
   // useEffect(() => {
   //   if (subLobby != null) {
