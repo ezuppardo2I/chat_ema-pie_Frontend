@@ -51,6 +51,44 @@ export default function Home() {
   useEffect(() => {
     const currentUser = userPool.getCurrentUser();
     setActiveLobby({ lobbyID: "" });
+    if (subLobby != null) {
+      subLobby.unsubscribe();
+    }
+
+    try {
+      setSubLobby(
+        pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
+          next: (message) => {
+            if (
+              message.messageText &&
+              message.messageText === "Nuovo messaggio in lobby" &&
+              message.lobbyID !== activeLobby?.lobbyID
+            ) {
+              setLobbies((prev: any[]) => {
+                return prev.map((lobby) => {
+                  if (
+                    lobby.lobbyID === message.lobbyID &&
+                    message.userID != user.userID
+                  ) {
+                    return {
+                      ...lobby,
+                      messageText: true,
+                    };
+                  }
+                  return lobby;
+                });
+              });
+            }
+
+            setLobbiesUpdate((prev: any) => [...prev, message]);
+
+            console.log("Lobbies update received:", message);
+          },
+        })
+      );
+    } catch (error) {
+      console.error("Error subscribing to lobbies update:", error);
+    }
 
     if (currentUser) {
       currentUser.getSession(
