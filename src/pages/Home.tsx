@@ -36,6 +36,7 @@ export default function Home() {
     setLobbies,
     subLobby,
     setSubLobby,
+    openSubscribeLobbiesUpdate,
   } = useGlobalContext();
   const userPool = new CognitoUserPool(poolData);
   const [users, setUsers] = useState<User[]>([]);
@@ -50,45 +51,15 @@ export default function Home() {
 
   useEffect(() => {
     const currentUser = userPool.getCurrentUser();
-    setActiveLobby({ lobbyID: "" });
-    if (subLobby != null) {
-      subLobby.unsubscribe();
-    }
 
-    try {
-      setSubLobby(
-        pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
-          next: (message) => {
-            if (
-              message.messageText &&
-              message.messageText === "Nuovo messaggio in lobby" &&
-              message.lobbyID !== activeLobby?.lobbyID
-            ) {
-              setLobbies((prev: any[]) => {
-                return prev.map((lobby) => {
-                  if (
-                    lobby.lobbyID === message.lobbyID &&
-                    message.userID != user.userID
-                  ) {
-                    return {
-                      ...lobby,
-                      messageText: true,
-                    };
-                  }
-                  return lobby;
-                });
-              });
-            }
+    // if (subLobby != null) {
+    //   subLobby.unsubscribe();
+    //   console.log("❌UNSUBSCRIBE");
+    // }
 
-            setLobbiesUpdate((prev: any) => [...prev, message]);
-
-            console.log("Lobbies update received:", message);
-          },
-        })
-      );
-    } catch (error) {
-      console.error("Error subscribing to lobbies update:", error);
-    }
+    // if (subLobby == null) {
+    //   openSubscribeLobbiesUpdate();
+    // }
 
     if (currentUser) {
       currentUser.getSession(
@@ -101,12 +72,10 @@ export default function Home() {
           const userID = JSON.parse(atob(idToken.split(".")[1])).sub;
           setIsLoggedIn(true);
 
-          const subscribeToLobbiesUpdate = async () => {
-            const info = await fetchAuthSession();
-            connectToIoT(info.identityId);
-          };
-
-          subscribeToLobbiesUpdate();
+          const info = await fetchAuthSession();
+          connectToIoT(info.identityId);
+          setActiveLobby({ lobbyID: "" });
+          console.log(activeLobby);
 
           const res = await getUser(userID);
           setUser(
@@ -123,46 +92,13 @@ export default function Home() {
     }
   }, []);
 
-  useEffect(() => {
-    if (subLobby != null) {
-      subLobby.unsubscribe();
-    }
-
-    try {
-      setSubLobby(
-        pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
-          next: (message) => {
-            if (
-              message.messageText &&
-              message.messageText === "Nuovo messaggio in lobby" &&
-              message.lobbyID !== activeLobby?.lobbyID
-            ) {
-              setLobbies((prev: any[]) => {
-                return prev.map((lobby) => {
-                  if (
-                    lobby.lobbyID === message.lobbyID &&
-                    message.userID != user.userID
-                  ) {
-                    return {
-                      ...lobby,
-                      messageText: true,
-                    };
-                  }
-                  return lobby;
-                });
-              });
-            }
-
-            setLobbiesUpdate((prev: any) => [...prev, message]);
-
-            console.log("Lobbies update received:", message);
-          },
-        })
-      );
-    } catch (error) {
-      console.error("Error subscribing to lobbies update:", error);
-    }
-  }, [activeLobby]);
+  // useEffect(() => {
+  //   if (subLobby != null) {
+  //     subLobby.unsubscribe();
+  //     console.log("❌UNSUBSCRIBE");
+  //   }
+  //   openSubscribeLobbiesUpdate();
+  // }, [activeLobby]);
 
   useEffect(() => {
     if (!user || !user.lobbiesIDs) return;
@@ -222,6 +158,7 @@ export default function Home() {
     }
     if (subLobby !== null) {
       subLobby.unsubscribe();
+      console.log("❌UNSUBSCRIBE");
       setSubLobby(null);
     }
   }
@@ -235,8 +172,6 @@ export default function Home() {
     setActiveLobby(lobby);
     const lobbyID = lobby.lobbyID;
     const userIDsActiveLobby = lobby.userIDs;
-
-    console.log("lobby", lobby);
 
     setUsersInfo([]);
     await loadUsersInfo(userIDsActiveLobby);

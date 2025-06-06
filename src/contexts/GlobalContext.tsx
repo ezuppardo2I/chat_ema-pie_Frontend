@@ -40,6 +40,7 @@ type GlobalContextType = {
   setLobbies: React.Dispatch<React.SetStateAction<any[]>>;
   subLobby: any | null;
   setSubLobby: React.Dispatch<React.SetStateAction<any | null>>;
+  openSubscribeLobbiesUpdate: () => Promise<void>;
 };
 
 const GlobalContext = createContext<GlobalContextType>({
@@ -72,6 +73,7 @@ const GlobalContext = createContext<GlobalContextType>({
   setLobbies: () => {},
   subLobby: null,
   setSubLobby: () => {},
+  openSubscribeLobbiesUpdate: async () => {},
 });
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
@@ -114,6 +116,10 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     }
   }, [lobbiesUpdate]);
 
+  useEffect(() => {
+    if (activeLobby != null && isLoggedIn == true) openSubscribeLobbiesUpdate();
+  }, [activeLobby]);
+
   async function getUser(userID: string) {
     const res = await fetch(
       `https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/user/${userID}`,
@@ -132,7 +138,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   }
 
   async function connectToIoT(cognitoIdentityID: string | undefined) {
-    await fetch(
+    const res = await fetch(
       "https://athx0w7rcf.execute-api.eu-west-2.amazonaws.com/dev/iot",
       {
         method: "POST",
@@ -140,6 +146,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ cognitoIdentityID: cognitoIdentityID }),
       }
     );
+    console.log(res && "CONNECTED TO IOT");
   }
 
   async function putLobby(name: string, userIDs: string[]) {
@@ -258,6 +265,46 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  function openSubscribeLobbiesUpdate(): Promise<void> {
+    return new Promise((resolve) => {
+      try {
+        setSubLobby(
+          pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
+            next: (message) => {
+              if (
+                message.messageText &&
+                message.messageText === "Nuovo messaggio in lobby" &&
+                message.lobbyID !== activeLobby?.lobbyID
+              ) {
+                setLobbies((prev: any[]) => {
+                  return prev.map((lobby) => {
+                    if (
+                      lobby.lobbyID === message.lobbyID &&
+                      message.userID != user.userID
+                    ) {
+                      return {
+                        ...lobby,
+                        messageText: true,
+                      };
+                    }
+                    return lobby;
+                  });
+                });
+              }
+
+              setLobbiesUpdate((prev: any) => [...prev, message]);
+            },
+          })
+        );
+        console.log("✅SUBSCRIBE");
+        resolve();
+      } catch (error) {
+        console.error("Error subscribing to lobbies update:", error);
+        resolve();
+      }
+    });
+  }
+
   return (
     <GlobalContext.Provider
       value={{
@@ -287,6 +334,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
         setActiveLobby,
         subLobby,
         setSubLobby,
+        openSubscribeLobbiesUpdate,
       }}
     >
       {children}
