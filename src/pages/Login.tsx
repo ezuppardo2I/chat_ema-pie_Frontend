@@ -7,11 +7,22 @@ import { poolData } from "../config";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { User } from "../model/User";
 import { fetchAuthSession } from "@aws-amplify/auth";
+import { useEffect } from "react";
 
 export default function Login() {
   const userPool = new CognitoUserPool(poolData);
-  const { getUser, setIsLoggedIn, setUser, setActiveLobby, connectToIoT } =
-    useGlobalContext();
+  const {
+    getUser,
+    setIsLoggedIn,
+    setUser,
+    setActiveLobby,
+    connectToIoT,
+    isLoggedIn,
+  } = useGlobalContext();
+
+  useEffect(() => {
+    if (isLoggedIn == true) setActiveLobby({ userID: "" });
+  }, [isLoggedIn]);
 
   function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,11 +59,9 @@ export default function Login() {
         );
 
         const info = await fetchAuthSession();
-        connectToIoT(info.identityId);
-        setActiveLobby({ lobbyID: "" });
+        await connectToIoT(info.identityId);
 
         setIsLoggedIn(true);
-        // openSubscribeLobbiesUpdate();
       },
       onFailure: (err) => {
         if (err.code === "UserNotConfirmedException") {
