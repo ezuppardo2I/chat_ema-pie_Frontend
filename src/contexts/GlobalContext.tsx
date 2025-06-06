@@ -40,7 +40,8 @@ type GlobalContextType = {
   setLobbies: React.Dispatch<React.SetStateAction<any[]>>;
   subLobby: any | null;
   setSubLobby: React.Dispatch<React.SetStateAction<any | null>>;
-  openSubscribeLobbiesUpdate: () => Promise<void>;
+  openSubscribeLobbiesUpdate: () => void;
+  closeSubscribeLobbiesUpdate: () => void;
 };
 
 const GlobalContext = createContext<GlobalContextType>({
@@ -74,6 +75,7 @@ const GlobalContext = createContext<GlobalContextType>({
   subLobby: null,
   setSubLobby: () => {},
   openSubscribeLobbiesUpdate: async () => {},
+  closeSubscribeLobbiesUpdate: () => {},
 });
 
 export function GlobalProvider({ children }: { children: ReactNode }) {
@@ -117,6 +119,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
   }, [lobbiesUpdate]);
 
   useEffect(() => {
+    closeSubscribeLobbiesUpdate();
     if (activeLobby.userID != null && isLoggedIn == true)
       openSubscribeLobbiesUpdate();
   }, [activeLobby]);
@@ -266,49 +269,50 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  function openSubscribeLobbiesUpdate(): Promise<void> {
-    return new Promise((resolve) => {
-      try {
-        setSubLobby(
-          pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
-            next: (message) => {
-              if (
-                message.messageText &&
-                message.messageText === "Nuovo messaggio in lobby" &&
-                message.lobbyID !== activeLobby?.lobbyID
-              ) {
-                setLobbies((prev: any[]) => {
-                  return prev.map((lobby) => {
-                    if (
-                      lobby.lobbyID === message.lobbyID &&
-                      message.userID != user.userID
-                    ) {
-                      return {
-                        ...lobby,
-                        messageText: true,
-                      };
-                    }
-                    return lobby;
-                  });
+  function openSubscribeLobbiesUpdate(): void {
+    try {
+      setSubLobby(
+        pubsub.subscribe({ topics: ["lobbies-update"] }).subscribe({
+          next: (message) => {
+            if (
+              message.messageText &&
+              message.messageText === "Nuovo messaggio in lobby" &&
+              message.lobbyID !== activeLobby?.lobbyID
+            ) {
+              setLobbies((prev: any[]) => {
+                return prev.map((lobby) => {
+                  if (
+                    lobby.lobbyID === message.lobbyID &&
+                    message.userID != user.userID
+                  ) {
+                    return {
+                      ...lobby,
+                      messageText: true,
+                    };
+                  }
+                  return lobby;
                 });
-              }
+              });
+            }
 
-              setLobbiesUpdate((prev: any) => [...prev, message]);
-            },
-          })
-        );
-        console.log("✅SUBSCRIBE");
-        resolve();
-      } catch (error) {
-        console.error("Error subscribing to lobbies update:", error);
-        resolve();
-      }
-    });
+            setLobbiesUpdate((prev: any) => [...prev, message]);
+          },
+        })
+      );
+      console.log("✅SUBSCRIBE");
+    } catch (error) {
+      console.error("Error subscribing to lobbies update:", error);
+    }
+  }
+
+  function closeSubscribeLobbiesUpdate(): void {
+    if (subLobby != null) subLobby.unsubscribe();
   }
 
   return (
     <GlobalContext.Provider
       value={{
+        closeSubscribeLobbiesUpdate,
         lobbies,
         setLobbies,
         lobbiesUpdate,
