@@ -50,6 +50,7 @@ export default function Home() {
 
   useEffect(() => {
     const currentUser = userPool.getCurrentUser();
+    setActiveLobby({ lobbyID: "" });
 
     if (currentUser) {
       currentUser.getSession(
@@ -79,7 +80,6 @@ export default function Home() {
               res.body.data.lobbiesIDs
             )
           );
-          setActiveLobby({ lobbyID: "" });
         }
       );
     }
