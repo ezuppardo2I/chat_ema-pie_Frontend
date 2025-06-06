@@ -306,6 +306,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
 
   function closeSubscribeLobbiesUpdate(): void {
     if (subLobby != null) subLobby.unsubscribe();
+    console.log("❌UNSUBSCRIBE");
   }
 
   return (

@@ -59,10 +59,9 @@ export default function Home() {
           const idToken = session.getIdToken().getJwtToken();
           const userID = JSON.parse(atob(idToken.split(".")[1])).sub;
 
+          setIsLoggedIn(true);
           const info = await fetchAuthSession();
           await connectToIoT(info.identityId);
-
-          setIsLoggedIn(true);
 
           const res = await getUser(userID);
           setUser(
