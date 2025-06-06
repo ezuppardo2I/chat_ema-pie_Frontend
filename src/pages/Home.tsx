@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import SignIn from "../components/SignIn";
 import Login from "./Login";
 import {
@@ -29,14 +29,11 @@ export default function Home() {
     putMessage,
     isSignedIn,
     pubsub,
-    setLobbiesUpdate,
     activeLobby,
     setActiveLobby,
     lobbies,
     setLobbies,
-    subLobby,
-    setSubLobby,
-    openSubscribeLobbiesUpdate,
+    closeSubscribeLobbiesUpdate,
   } = useGlobalContext();
   const userPool = new CognitoUserPool(poolData);
   const [users, setUsers] = useState<User[]>([]);
@@ -51,15 +48,6 @@ export default function Home() {
 
   useEffect(() => {
     const currentUser = userPool.getCurrentUser();
-
-    // if (subLobby != null) {
-    //   subLobby.unsubscribe();
-    //   console.log("❌UNSUBSCRIBE");
-    // }
-
-    // if (subLobby == null) {
-    //   openSubscribeLobbiesUpdate();
-    // }
 
     if (currentUser) {
       currentUser.getSession(
@@ -94,14 +82,6 @@ export default function Home() {
   useEffect(() => {
     if (isLoggedIn == true) setActiveLobby({ userID: "" });
   }, [isLoggedIn]);
-
-  // useEffect(() => {
-  //   if (subLobby != null) {
-  //     subLobby.unsubscribe();
-  //     console.log("❌UNSUBSCRIBE");
-  //   }
-  //   openSubscribeLobbiesUpdate();
-  // }, [activeLobby]);
 
   useEffect(() => {
     if (!user || !user.lobbiesIDs) return;
@@ -159,11 +139,7 @@ export default function Home() {
       sub.unsubscribe();
       setSub(null);
     }
-    if (subLobby !== null) {
-      subLobby.unsubscribe();
-      console.log("❌UNSUBSCRIBE");
-      setSubLobby(null);
-    }
+    closeSubscribeLobbiesUpdate();
   }
 
   async function handleIotConnection(lobby: any) {
